@@ -22,6 +22,7 @@
       <a href="#mystery">Mystery</a>
       <a href="#about">About</a>
       <a href="#how">How</a>
+      <a href="account.html">Account</a>
     </nav>
     <a href="#waitlist" class="btn btn-pill nav-cta">Join the list</a>
     <button class="nav-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">
@@ -35,8 +36,8 @@
   <div class="hero-content">
     <p class="eyebrow">Curated decants · 2&nbsp;ml</p>
     <h1 class="hero-title">A scent for<br/><em>every feeling.</em></h1>
-    <p class="lede">We curate real, authentic fragrances into small sets built around a mood —
-      a city, a season, a night. Discover in 2&nbsp;ml. Commit only when you're sure.</p>
+    <p class="lede">We curate real, authentic fragrances into small sets built around a mood.
+      A city, a season, a night. Discover in 2&nbsp;ml. Commit only when you're sure.</p>
     <div class="hero-actions">
       <a href="#sets" class="link-arrow">Explore the stories</a>
       <a href="#mystery" class="link-arrow muted">Or roll a mystery box</a>
@@ -48,7 +49,7 @@
 <!-- MANIFESTO -->
 <section class="manifesto reveal">
   <p>A full bottle is a blind bet. We curate <em>2&nbsp;ml of real, authentic juice</em>
-     into stories you can wear — so you explore, fall in love, <em>then</em> commit.</p>
+     into stories you can wear. You explore, you fall in love, <em>then</em> you commit.</p>
 </section>
 
 <!-- STORIES / SETS -->
@@ -312,14 +313,16 @@
     </div>
     <div class="about-text reveal">
       <span class="kicker">Our story</span>
-      <h2>Fragrance, without the gamble.</h2>
-      <p>Scent Stories began with a simple frustration: discovering perfume is expensive, and a
-        full bottle bought blind is a $200 mistake waiting to happen.</p>
+      <h2>We don't sell samples. We sell somewhere to go.</h2>
+      <p>Anyone can mail you five vials. That isn't what this is.</p>
+      <p>Scent Stories is built around emotion. Every advent calendar, every mystery box, every set
+        is made to take you somewhere. A summer in Italy. A midnight in Berlin. A first date you'll
+        want to remember.</p>
       <p>So we do the hunting. We obsess over niche houses, artistic perfumers and the bottles the
-        internet won't shut up about — then curate them into small sets built around a feeling.
+        internet won't shut up about, then curate them into small sets built around a feeling.
         A city. A season. A night you want to remember.</p>
-      <p>Every decant is <em>2&nbsp;ml of real, authentic juice</em>. Explore five at a time, find the
-        one that's yours, and we'll point you to the full bottle — with your decant credited.</p>
+      <p>Every decant is <em>2&nbsp;ml of real, authentic juice</em>. You're not just trying perfume.
+        You're collecting moments, and finding the one that becomes yours.</p>
     </div>
   </div>
 </section>
@@ -341,21 +344,18 @@
   <div class="grid reviews-grid">
     <figure class="review reveal">
       <div class="stars">★★★★★</div>
-      <blockquote>Honestly bought the Tokyo Rain set kind of as a joke. Tam Dao is my daily now.
-        Did not see that coming.</blockquote>
-      <figcaption>Mara, 24 · Berlin</figcaption>
+      <blockquote>Bought the Tokyo Rain set kind of as a joke. Tam Dao is my daily now.</blockquote>
+      <figcaption>Mara · Berlin</figcaption>
     </figure>
     <figure class="review reveal">
       <div class="stars">★★★★☆</div>
-      <blockquote>Got the Niche 25 for my boyfriend who's way too deep in this hobby. He rationed
-        the doors so it'd last longer lol. Wish the vials were a hair bigger but 2ml is enough to
-        actually test something.</blockquote>
+      <blockquote>Got the Niche 25 for my boyfriend and he rationed the doors so it'd last longer.
+        2 ml is plenty to actually test something.</blockquote>
       <figcaption>Daniela · London</figcaption>
     </figure>
     <figure class="review reveal">
       <div class="stars">★★★★★</div>
-      <blockquote>The Wildcard box is stupid fun. Two of them weren't for me, but the other three
-        I'd genuinely buy full bottles of. Worth it just for the chaos.</blockquote>
+      <blockquote>The Wildcard box is stupid fun. Three of five I'd genuinely buy full bottles of.</blockquote>
       <figcaption>Sofia · NYC</figcaption>
     </figure>
   </div>
@@ -367,7 +367,7 @@
     <span class="kicker">Be first</span>
     <h2>Join the list</h2>
     <p>We're curating the first drop now. Get early access and a founding-member discount.</p>
-    <form class="wl-form" onsubmit="event.preventDefault(); this.reset(); document.getElementById('wl-msg').classList.add('show');">
+    <form class="wl-form" onsubmit="event.preventDefault(); try{localStorage.setItem('ss_email', this.querySelector('input').value);}catch(e){} this.reset(); document.getElementById('wl-msg').classList.add('show');">
       <input type="email" required placeholder="you@example.com" aria-label="Email" />
       <button type="submit" class="btn btn-solid">Get early access</button>
     </form>
@@ -401,7 +401,7 @@
       <p class="modal-qty" id="modalQty"></p>
       <p class="modal-next">Reserve yours — the first drop ships this autumn. Join the list and we'll
         hold your set, plus a founding-member discount.</p>
-      <a href="#waitlist" class="btn btn-solid full" data-close>Reserve yours →</a>
+      <a href="#waitlist" class="btn btn-solid full" id="modalReserve" data-close>Reserve yours →</a>
     </div>
   </div>
 </div>
@@ -417,11 +417,13 @@ document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',
 
 // product modal
 const modal=document.getElementById('modal');
+let currentProduct=null;
 function openModal(card){
   const type = card.classList.contains('advent')?'advent':card.classList.contains('mbox')?'mystery':'set';
   const media=card.querySelector('.set-img,.advent-img,.mbox-img');
   document.getElementById('modalMedia').innerHTML = media?media.outerHTML:'';
-  document.getElementById('modalTitle').textContent = card.querySelector('h3').textContent;
+  currentProduct = card.querySelector('h3').textContent;
+  document.getElementById('modalTitle').textContent = currentProduct;
   const tag=card.querySelector('.mood,.mbox-sub,.advent-body p');
   document.getElementById('modalTagline').textContent = tag?tag.textContent:'';
   document.getElementById('modalKicker').textContent = type==='mystery'?'Mystery box':type==='advent'?'Advent calendar':'The set';
@@ -441,6 +443,9 @@ document.querySelectorAll('.set,.advent,.mbox').forEach(card=>{
   card.addEventListener('click',e=>{ if(e.target.closest('a'))return; openModal(card); });
 });
 modal.querySelectorAll('[data-close]').forEach(el=>el.addEventListener('click',closeModal));
+document.getElementById('modalReserve').addEventListener('click',()=>{
+  if(currentProduct){try{const r=JSON.parse(localStorage.getItem('ss_reserved')||'[]'); if(!r.includes(currentProduct)){r.push(currentProduct); localStorage.setItem('ss_reserved',JSON.stringify(r));}}catch(e){}}
+});
 addEventListener('keydown',e=>{ if(e.key==='Escape')closeModal(); });
 </script>
 </body>

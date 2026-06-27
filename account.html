@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Scent Stories — Your account</title>
+<meta name="description" content="Your Scent Stories account — reserved stories, decant credit and scent profile." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav scrolled" id="nav">
+  <div class="nav-inner">
+    <a href="index.html#top" class="brand">Scent&nbsp;Stories</a>
+    <nav class="nav-links">
+      <a href="index.html#sets">Stories</a>
+      <a href="index.html#advent">Advent</a>
+      <a href="index.html#mystery">Mystery</a>
+      <a href="index.html#about">About</a>
+      <a href="account.html">Account</a>
+    </nav>
+    <a href="index.html#waitlist" class="btn btn-pill nav-cta">Join the list</a>
+    <button class="nav-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- SIGN IN (shown when no account) -->
+<section class="section acc-signin" id="signin" hidden>
+  <div class="signin-card">
+    <span class="kicker">Members</span>
+    <h2>Your account</h2>
+    <p>Sign in with your email to see your reserved stories, decant credit and scent profile.</p>
+    <form id="signinForm" class="signin-form">
+      <input type="email" required placeholder="you@example.com" aria-label="Email" />
+      <button type="submit" class="btn btn-solid">Sign in</button>
+    </form>
+    <p class="signin-note">Concept demo — no password, nothing leaves your browser.</p>
+  </div>
+</section>
+
+<!-- DASHBOARD (shown when signed in) -->
+<section class="section acc-dash" id="dash" hidden>
+  <div class="dash-head">
+    <div>
+      <span class="kicker">Welcome back</span>
+      <h2 id="dashName">friend</h2>
+      <p id="dashEmail" class="dash-email"></p>
+    </div>
+    <span class="member-badge">Founding member</span>
+  </div>
+
+  <div class="dash-grid">
+
+    <!-- Reserved -->
+    <article class="dash-card dash-wide">
+      <div class="dash-card-head"><h3>Reserved stories</h3><span class="dash-count" id="resCount">0</span></div>
+      <ul class="res-list" id="resList"></ul>
+      <p class="res-empty" id="resEmpty" hidden>Nothing reserved yet.
+        <a href="index.html#sets" class="link-arrow">Explore the stories</a></p>
+      <p class="res-foot">Reserved items are held for the first drop. We'll email you when it's live.</p>
+    </article>
+
+    <!-- Decant credit -->
+    <article class="dash-card">
+      <div class="dash-card-head"><h3>Decant credit</h3></div>
+      <p class="credit-amt">$0.00</p>
+      <p class="dash-muted">Earned on every order. Redeemable toward any full bottle once you find your signature.</p>
+    </article>
+
+    <!-- Scent profile -->
+    <article class="dash-card">
+      <div class="dash-card-head"><h3>Your scent profile</h3></div>
+      <div class="chips" id="chips"><span class="chip chip-empty">Not set yet</span></div>
+      <p class="dash-muted">Take the quiz and we'll tune your recommendations.</p>
+      <button class="btn btn-line full" disabled>Take the scent quiz · soon</button>
+    </article>
+
+    <!-- Orders -->
+    <article class="dash-card dash-wide">
+      <div class="dash-card-head"><h3>Orders</h3></div>
+      <div class="orders-empty">
+        <p class="dash-muted">No orders yet. The first drop ships this autumn — reserve your stories now and you'll be first in line.</p>
+        <a href="index.html#sets" class="btn btn-line">Browse stories</a>
+      </div>
+    </article>
+
+  </div>
+
+  <p class="dash-signout"><a href="#" id="signout" class="link-arrow muted">Sign out</a></p>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand"><span class="brand">Scent&nbsp;Stories</span><p>A scent for every feeling.</p></div>
+    <p class="disclaimer">Concept site. All fragrances named are trademarks of their respective owners.
+      Scent Stories is an independent curator, not affiliated with, sponsored by, or endorsed by any brand shown.
+      Decants are repackaged from authentic products.</p>
+  </div>
+  <div class="footer-bottom">© 2026 Scent Stories · a concept · <a href="faq.html" class="footer-link">FAQ</a></div>
+</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+function getEmail(){ try{return localStorage.getItem('ss_email');}catch(e){return null;} }
+function getReserved(){ try{return JSON.parse(localStorage.getItem('ss_reserved')||'[]');}catch(e){return [];} }
+function nameFromEmail(e){ if(!e)return 'friend'; const n=e.split('@')[0].replace(/[._]/g,' '); return n.charAt(0).toUpperCase()+n.slice(1); }
+
+function render(){
+  const email=getEmail();
+  if(!email){ $('signin').hidden=false; $('dash').hidden=true; return; }
+  $('signin').hidden=true; $('dash').hidden=false;
+  $('dashName').textContent=nameFromEmail(email);
+  $('dashEmail').textContent=email;
+  const res=getReserved();
+  $('resCount').textContent=res.length;
+  const list=$('resList'); list.innerHTML='';
+  if(res.length===0){ $('resEmpty').hidden=false; }
+  else{
+    $('resEmpty').hidden=true;
+    res.forEach(name=>{
+      const li=document.createElement('li');
+      li.className='res-item';
+      const span=document.createElement('span'); span.textContent=name;
+      const status=document.createElement('span'); status.className='res-status'; status.textContent='Reserved';
+      const rm=document.createElement('button'); rm.className='res-remove'; rm.textContent='Remove'; rm.setAttribute('aria-label','Remove '+name);
+      rm.addEventListener('click',()=>{
+        const cur=getReserved().filter(x=>x!==name);
+        localStorage.setItem('ss_reserved',JSON.stringify(cur)); render();
+      });
+      const meta=document.createElement('span'); meta.className='res-meta'; meta.append(status,rm);
+      li.append(span,meta); list.appendChild(li);
+    });
+  }
+}
+
+$('signinForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const v=e.target.querySelector('input').value;
+  try{localStorage.setItem('ss_email',v);}catch(err){}
+  render();
+});
+$('signout').addEventListener('click',e=>{
+  e.preventDefault();
+  try{localStorage.removeItem('ss_email');}catch(err){}
+  render();
+});
+document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',()=>document.body.classList.remove('nav-open')));
+render();
+</script>
+</body>
+</html>
