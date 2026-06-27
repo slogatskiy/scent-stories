@@ -124,6 +124,8 @@ a{color:inherit;text-decoration:none}
 .advent-dark .advent-body h3{color:#f5f2eb}
 .advent-dark .advent-body p{color:#9d978a}
 .advent-dark .qty{color:#9d978a}
+.advent-dark .price{color:#f5f2eb}
+.advent-dark .open-hint{color:#d8c19a}
 .advent-dark .set-foot{border-color:rgba(245,242,235,.14)}
 
 /* ============ MYSTERY ============ */
