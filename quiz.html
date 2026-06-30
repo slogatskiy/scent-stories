@@ -4,195 +4,261 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Scent Stories — Build your set</title>
-<meta name="description" content="Take the quiz and we'll curate a personal surprise set of five — for yourself or as a gift." />
+<meta name="description" content="A quiz that reads your vibe and curates a new set of five — just for you." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body class="quizdark">
 
-<!-- NAV -->
-<header class="nav scrolled" id="nav">
-  <div class="nav-inner">
-    <a href="index.html#top" class="brand"><svg class="brand-mark" viewBox="0 0 24 32" aria-hidden="true"><rect x="8.5" y="2" width="7" height="4.4" rx="1" fill="currentColor"/><rect x="10.5" y="6" width="3" height="2" fill="currentColor"/><rect x="5.5" y="8" width="13" height="22" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Scent&nbsp;Stories</a>
-    <nav class="nav-links">
-      <a href="index.html#sets">Stories</a>
-      <a href="index.html#mystery">Mystery</a>
-      <a href="quiz.html">Build a set</a>
-      <a href="account.html">Account</a>
-    </nav>
-    <a class="cart-btn" id="cartBtn" href="index.html#bag" aria-label="Open bag">
-      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6.5 8.5 h11 l-1 12 H7.5 Z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 8.5 a3 3 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
-      <span class="cart-count" id="cartCount">0</span>
-    </a>
-    <button class="nav-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-</header>
+<div class="qz-top">
+  <a href="index.html#top" class="brand"><svg class="brand-mark" viewBox="0 0 24 32" width="14" aria-hidden="true" style="height:1em;width:.62em"><rect x="8.5" y="2" width="7" height="4.4" rx="1" fill="currentColor"/><rect x="10.5" y="6" width="3" height="2" fill="currentColor"/><rect x="5.5" y="8" width="13" height="22" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Scent&nbsp;Stories</a>
+  <div class="qz-prog" id="prog"></div>
+  <a href="index.html" class="qz-exit">Exit</a>
+</div>
 
-<!-- QUIZ -->
-<section class="quiz-wrap">
-  <div class="quiz-progress" id="progress" hidden></div>
-  <div id="quizStage"></div>
-  <div style="text-align:center"><button class="quiz-back" id="backBtn" hidden>← Back</button></div>
-</section>
+<div class="qz-stage"><div id="stage"></div></div>
 
 <script>
 const $=id=>document.getElementById(id);
-const stage=$('quizStage'), progress=$('progress'), backBtn=$('backBtn');
+const stage=$('stage'), prog=$('prog');
+const AX=['Citrus','Woody','Amber','Floral','Leather','Oud']; // 6 axes
+const v=(a,b,c,d,e,f)=>[a,b,c,d,e,f];
 
-const QUESTIONS=[
-  {key:'vibe', q:'What pulls you in?', opts:[
-    {label:'Fresh & bright', sub:'citrus, sea, clean', tag:'fresh', thumb:'grad:linear-gradient(155deg,#e9ddc6,#c9a87d)'},
-    {label:'Warm & sweet', sub:'amber, vanilla, spice', tag:'warm', thumb:'grad:linear-gradient(155deg,#e9cfb6,#b97a5b)'},
-    {label:'Dark & leathery', sub:'smoke, leather, oud', tag:'dark', thumb:'grad:linear-gradient(155deg,#3e3f45,#17161b)'},
-    {label:'Floral & powdery', sub:'iris, rose, lipstick', tag:'floral', thumb:'grad:linear-gradient(155deg,#e7d3d9,#b78ea0)'},
-  ]},
-  {key:'occasion', q:'When do you want to wear it?', opts:[
-    {label:'Every day', sub:'your easy signature', tag:'everyday', thumb:'grad:linear-gradient(155deg,#e0e3e5,#99a2a9)'},
-    {label:'At work', sub:'sharp, quietly expensive', tag:'work', thumb:'grad:linear-gradient(155deg,#ced3d7,#5a6068)'},
-    {label:'On a date', sub:'lean-closer warmth', tag:'date', thumb:'grad:linear-gradient(155deg,#ffd24d,#ff5a3c)'},
-    {label:'A night out', sub:'loud on purpose', tag:'night', thumb:'grad:linear-gradient(155deg,#6a7bff,#15110d)'},
-  ]},
-  {key:'place', q:'Where does it take you?', opts:[
-    {label:'The southern sea', sub:'sun, citrus, salt', tag:'sea', thumb:'img:summer-in-italy.png'},
-    {label:'Forests & mountains', sub:'moss, pine, cold air', tag:'forest', thumb:'img:scottish-highlands.png'},
-    {label:'A neon city at night', sub:'rain, glass, energy', tag:'citynight', thumb:'img:tokyo-rain.png'},
-    {label:'The eastern desert', sub:'spice, amber, smoke', tag:'desert', thumb:'img:desert-nights.png'},
-  ]},
-  {key:'sillage', q:'How big should the trail be?', opts:[
-    {label:'Soft & intimate', sub:'just for those close', tag:'soft', thumb:'grad:linear-gradient(155deg,#efe7d8,#cdbfa6)'},
-    {label:'Moderate', sub:'noticed, not loud', tag:'medium', thumb:'grad:linear-gradient(155deg,#d8c9a8,#a98f63)'},
-    {label:'Room-filling', sub:'announce yourself', tag:'loud', thumb:'grad:linear-gradient(155deg,#c9a87d,#7a4a23)'},
-  ]},
+// ---- fragrance pool with 6-axis vectors [citrus,woody,amber,floral,leather,oud] ----
+const POOL=[
+ {n:'Acqua di Parma — Fico di Amalfi',x:v(3,1,0,1,0,0)},
+ {n:'Tom Ford — Neroli Portofino',x:v(3,0,0,1,0,0)},
+ {n:'Essential Parfums — Nice Bergamote',x:v(3,1,0,0,0,0)},
+ {n:'Creed — Virgin Island Water',x:v(3,0,1,0,0,0)},
+ {n:'Atelier Cologne — Orange Sanguine',x:v(3,0,0,0,0,0)},
+ {n:'Guerlain — Mandarine Basilic',x:v(3,0,0,1,0,0)},
+ {n:'MFK — Aqua Celestia Forte',x:v(3,0,0,1,0,0)},
+ {n:'Byredo — Sundazed',x:v(2,0,1,1,0,0)},
+ {n:'Creed — Green Irish Tweed',x:v(1,2,0,2,0,0)},
+ {n:'Parfums de Marly — Greenley',x:v(1,2,0,1,0,0)},
+ {n:'Chanel — Sycomore',x:v(0,3,0,0,1,0)},
+ {n:'Lalique — Encre Noire',x:v(0,3,0,0,0,0)},
+ {n:'Diptyque — Tam Dao',x:v(0,3,1,0,0,0)},
+ {n:'Le Labo — Baie 19',x:v(1,2,0,1,0,0)},
+ {n:'Comme des Garçons — Wonderwood',x:v(0,3,0,0,0,1)},
+ {n:'Aesop — Hwyl',x:v(0,3,0,0,0,1)},
+ {n:'Hermès — H24',x:v(1,2,0,1,0,0)},
+ {n:'Essential Parfums — Bois Impérial',x:v(0,3,1,0,0,0)},
+ {n:'MFK — Gentle Fluidity Gold',x:v(0,1,2,0,0,1)},
+ {n:"Kilian — Angels' Share",x:v(0,1,3,0,0,1)},
+ {n:'Nishane — Ani',x:v(1,0,2,0,0,0)},
+ {n:'MFK — Grand Soir',x:v(0,0,3,0,0,1)},
+ {n:'Mancera — Tonka Cola',x:v(0,0,3,0,0,0)},
+ {n:"Kilian — Love, Don't Be Shy",x:v(0,0,2,2,0,0)},
+ {n:'Frédéric Malle — Portrait of a Lady',x:v(0,0,1,3,0,1)},
+ {n:'Initio — Atomic Rose',x:v(1,1,0,3,0,0)},
+ {n:'Mancera — Roses Vanille',x:v(0,0,2,2,0,0)},
+ {n:'Guerlain — Insolence',x:v(0,0,1,3,0,0)},
+ {n:'Parfums de Marly — Delina',x:v(1,0,1,3,0,0)},
+ {n:'Diptyque — Eau Rose',x:v(1,0,0,3,0,0)},
+ {n:'Le Labo — Patchouli 24',x:v(0,1,0,0,3,0)},
+ {n:'BDK — Gris Charnel',x:v(0,1,1,0,1,1)},
+ {n:'Maison Margiela — Jazz Club',x:v(0,1,1,0,2,0)},
+ {n:'Tauer — L’Air du Désert Marocain',x:v(0,1,2,0,1,2)},
+ {n:'Naomi Goodsir — Bois d’Ascèse',x:v(0,1,0,0,3,0)},
+ {n:'Nasomatto — Black Afgano',x:v(0,1,0,0,2,3)},
+ {n:'Initio — Oud for Greatness',x:v(0,1,0,0,0,3)},
+ {n:'Amouage — Interlude Man',x:v(0,1,1,0,1,3)},
+ {n:'MFK — Oud Satin Mood',x:v(0,0,2,1,0,3)},
+ {n:'Lattafa — Khamrah',x:v(0,0,3,0,0,2)},
+ {n:'Montale — Arabians Tonka',x:v(0,0,2,0,0,3)},
+ {n:'Mancera — Red Tobacco',x:v(0,1,1,0,1,2)},
+ {n:'Xerjoff — Naxos',x:v(0,1,3,0,0,1)},
 ];
 
-const STORIES=[
-  {name:'Summer in Italy', slug:'summer-in-italy', tags:['fresh','sea','everyday','soft']},
-  {name:'Berlin Midnight', slug:'berlin-midnight', tags:['dark','citynight','night','loud']},
-  {name:'Winter London', slug:'winter-london', tags:['warm','citynight','work','medium']},
-  {name:'Scottish Highlands', slug:'scottish-highlands', tags:['fresh','forest','everyday','medium']},
-  {name:'The Boardroom', slug:'the-boardroom', tags:['fresh','citynight','work','medium']},
-  {name:'Marrakech Souk', slug:'marrakech-souk', tags:['warm','desert','night','loud']},
-  {name:'Tokyo Rain', slug:'tokyo-rain', tags:['fresh','citynight','everyday','soft']},
-  {name:'Paris Affair', slug:'paris-affair', tags:['floral','citynight','date','medium']},
-  {name:'Desert Nights', slug:'desert-nights', tags:['dark','desert','night','loud']},
-  {name:'New York Penthouse', slug:'new-york-penthouse', tags:['warm','citynight','night','loud']},
-  {name:'First Date', slug:'first-date', tags:['warm','date','everyday','medium']},
+// ---- questions ----
+const MOOD=[
+ {cap:'Foggy pier',grad:'linear-gradient(150deg,#9fb1bd,#3f5560)',x:v(2,1,0,0,0,0)},
+ {cap:'Neon alley',grad:'linear-gradient(150deg,#4a3a6b,#15121f)',x:v(0,1,0,0,2,1)},
+ {cap:'Marble lobby',grad:'linear-gradient(150deg,#dcd6c8,#8a8576)',x:v(1,2,1,0,0,0)},
+ {cap:'Desert dusk',grad:'linear-gradient(150deg,#e0a25a,#7a3b1f)',x:v(0,0,2,0,0,2)},
+ {cap:'Citrus grove',grad:'linear-gradient(150deg,#e9d77a,#7fa14a)',x:v(3,0,0,1,0,0)},
+ {cap:'Leather library',grad:'linear-gradient(150deg,#7a5230,#2e1c10)',x:v(0,1,1,0,3,0)},
+ {cap:'Silk & dusk',grad:'linear-gradient(150deg,#e7c2cf,#7d4f63)',x:v(0,0,1,3,0,0)},
+ {cap:'Smoke & bass',grad:'linear-gradient(150deg,#3a3a40,#0e0e12)',x:v(0,1,0,0,2,1)},
+ {cap:'Pine cabin',grad:'linear-gradient(150deg,#7d9c7e,#26402b)',x:v(0,3,0,0,0,1)},
+];
+const CITY=[
+ {cap:'Amalfi',grad:'linear-gradient(150deg,#f1d79e,#d98f5a)',x:v(3,1,0,1,0,0)},
+ {cap:'Tokyo',grad:'linear-gradient(150deg,#9fb8c9,#2b3742)',x:v(1,2,0,0,0,0)},
+ {cap:'Paris',grad:'linear-gradient(150deg,#e7d3d9,#9a6577)',x:v(0,0,1,2,0,0)},
+ {cap:'Berlin',grad:'linear-gradient(150deg,#43454d,#16161b)',x:v(0,1,0,0,2,1)},
+ {cap:'Marrakech',grad:'linear-gradient(150deg,#e0a857,#8a3f1f)',x:v(0,0,1,0,0,3)},
+ {cap:'New York',grad:'linear-gradient(150deg,#c4cad0,#3a4048)',x:v(0,1,2,0,1,0)},
+];
+const TEXTURE=[
+ {l:'Linen',s:'cool, easy',x:v(2,1,0,0,0,0)},
+ {l:'Leather',s:'worn-in',x:v(0,1,0,0,3,0)},
+ {l:'Velvet',s:'deep, plush',x:v(0,0,2,0,0,2)},
+ {l:'Silk',s:'soft skin',x:v(0,0,1,2,0,0)},
+ {l:'Cashmere',s:'warm wrap',x:v(0,2,1,0,0,0)},
+];
+const DRINK=[
+ {l:'Espresso',s:'dark & sharp',x:v(0,1,2,0,0,0)},
+ {l:'Negroni',s:'bitter & bold',x:v(1,0,1,0,0,2)},
+ {l:'Matcha',s:'green & calm',x:v(1,2,0,0,0,0)},
+ {l:'Whisky',s:'smoky & warm',x:v(0,1,1,0,2,0)},
+ {l:'Champagne',s:'bright & light',x:v(2,0,0,1,0,0)},
+];
+const HOUR=[
+ {l:'Dawn',s:'5 AM',x:v(2,0,0,1,0,0)},
+ {l:'Golden hour',s:'6 PM',x:v(1,0,2,0,0,0)},
+ {l:'Midnight',s:'12 AM',x:v(0,1,0,0,1,1)},
+ {l:'3 AM',s:'still out',x:v(0,0,1,0,1,2)},
+];
+const BLITZ=[
+ {a:{l:'City',x:v(0,1,0,0,1,0)},b:{l:'Sea',x:v(2,0,0,0,0,0)}},
+ {a:{l:'Smoke',x:v(0,0,0,0,2,1)},b:{l:'Bloom',x:v(0,0,0,2,0,0)}},
+ {a:{l:'Gold',x:v(0,0,2,0,0,1)},b:{l:'Silver',x:v(1,2,0,0,0,0)}},
+ {a:{l:'Velvet',x:v(0,0,1,0,1,1)},b:{l:'Linen',x:v(2,1,0,0,0,0)}},
+ {a:{l:'Be remembered',x:v(0,0,1,0,1,2)},b:{l:'Be a secret',x:v(1,1,0,1,0,0)}},
 ];
 
-let state={mode:null, name:'', step:0, answers:[]};
+// ---- archetype names by top-2 axes ----
+const NAME2={
+ 'Citrus|Woody':'Sea & Cedar','Citrus|Amber':'Golden Hour','Citrus|Floral':'Garden Bright',
+ 'Citrus|Leather':'Salt & Smoke','Citrus|Oud':'Desert Citrus','Amber|Woody':'Amber Woods',
+ 'Floral|Woody':'Green Bloom','Leather|Woody':'Cedar & Leather','Oud|Woody':'Black Forest',
+ 'Amber|Floral':'Velvet Petal','Amber|Leather':'Honey Leather','Amber|Oud':'Amber Oud',
+ 'Floral|Leather':'Rose Noir','Floral|Oud':'Oud Rose','Leather|Oud':'Smoke & Oud'};
+const NAME1={Citrus:'Pure Citrus',Woody:'Deep Woods',Amber:'Amber Heart',Floral:'In Bloom',Leather:'Leather Bound',Oud:'Oud Royale'};
 
-function thumbStyle(t){ return t.indexOf('img:')===0 ? "background-image:url(images/"+t.slice(4)+")" : "background:"+t.slice(5); }
+// ---- math ----
+function add(a,b){return a.map((x,i)=>x+b[i]);}
+function dot(a,b){return a.reduce((s,x,i)=>s+x*b[i],0);}
+function norm(a){return Math.sqrt(dot(a,a))||1;}
+function cos(a,b){return dot(a,b)/(norm(a)*norm(b));}
 
-function renderProgress(){
-  progress.hidden = state.step<1;
-  progress.innerHTML='';
-  for(let i=0;i<QUESTIONS.length;i++){ const s=document.createElement('span'); if(i< state.step) s.className='on'; progress.appendChild(s); }
+function profile(){
+  let U=[0,0,0,0,0,0];
+  state.mood.forEach(i=>U=add(U,MOOD[i].x));
+  if(state.city!=null)U=add(U,CITY[state.city].x);
+  if(state.texture!=null)U=add(U,TEXTURE[state.texture].x);
+  if(state.drink!=null)U=add(U,DRINK[state.drink].x);
+  if(state.hour!=null)U=add(U,HOUR[state.hour].x);
+  state.blitz.forEach((side,i)=>{ if(side!=null)U=add(U,BLITZ[i][side].x); });
+  return U;
+}
+function buildSet(U){
+  const scored=POOL.map(p=>({p,rel:cos(U,p.x)})).sort((a,b)=>b.rel-a.rel);
+  const pick=[]; const lambda=0.7;
+  while(pick.length<5 && scored.length){
+    let best=null,bi=-1;
+    scored.forEach((c,i)=>{
+      let maxSim=0; pick.forEach(q=>{maxSim=Math.max(maxSim,cos(c.p.x,q.x));});
+      const mmr=lambda*c.rel-(1-lambda)*maxSim;
+      if(best===null||mmr>best){best=mmr;bi=i;}
+    });
+    pick.push(scored[bi].p); scored.splice(bi,1);
+  }
+  return pick;
+}
+function archetype(U){
+  const idx=U.map((x,i)=>[x,i]).sort((a,b)=>b[0]-a[0]);
+  const a=AX[idx[0][1]], b=AX[idx[1][1]];
+  if(idx[1][0]===0) return NAME1[a];
+  return NAME2[a+'|'+b]||NAME2[b+'|'+a]||NAME1[a];
+}
+function fingerprint(U){
+  return U.map((x,i)=>[x,i]).sort((a,b)=>b[0]-a[0]).filter(p=>p[0]>0).slice(0,3).map(p=>AX[p[1]]);
 }
 
-function renderMode(){
-  state.step=0; renderProgress(); backBtn.hidden=true;
-  stage.innerHTML =
-    '<div class="quiz-step"><span class="kicker">Build a set</span>'+
-    '<h2 class="quiz-q">Five 2&nbsp;ml decants, picked for you.</h2>'+
-    '<p style="color:var(--muted);max-width:520px;margin:0 auto 2.2rem">Answer four quick questions and we\'ll curate a personal surprise set. You don\'t pick the scents — that\'s the fun.</p>'+
-    '<div class="mode-grid">'+
-      '<div class="mode-tile" data-mode="self"><div class="mt-bg" style="background-image:url(images/about.png)"></div><div class="mt-text"><h3>For myself</h3><p>Discover your next signature.</p></div></div>'+
-      '<div class="mode-tile" data-mode="gift"><div class="mt-bg" style="background-image:url(images/paris-affair.png)"></div><div class="mt-text"><h3>As a gift</h3><p>Build a set for someone you like.</p></div></div>'+
-    '</div></div>';
-  stage.querySelectorAll('.mode-tile').forEach(t=>t.addEventListener('click',()=>{
-    state.mode=t.getAttribute('data-mode'); state.answers=[];
-    if(state.mode==='gift') renderName(); else { state.step=1; renderQuestion(); }
+// ---- state & flow ----
+const STEPS=['start','mood','city','texture','drink','hour','blitz','result'];
+let state={i:0,mood:[],city:null,texture:null,drink:null,hour:null,blitz:[null,null,null,null,null]};
+
+function renderProg(){
+  const qn=6; const cur=Math.min(Math.max(state.i-1,0),qn);
+  prog.innerHTML=''; for(let k=0;k<qn;k++){const e=document.createElement('i'); if(k<cur)e.className='on'; prog.appendChild(e);}
+  prog.style.visibility=(state.i>=1&&state.i<=6)?'visible':'hidden';
+}
+function go(n){state.i=n;render();}
+function render(){
+  renderProg();
+  const s=STEPS[state.i];
+  if(s==='start')return renderStart();
+  if(s==='mood')return renderMood();
+  if(s==='city')return renderTiles(CITY,'city','Where would you disappear?','Pick the one that pulls you.','g-city',2);
+  if(s==='texture')return renderCards(TEXTURE,'texture','What do you want on your skin?',3);
+  if(s==='drink')return renderCards(DRINK,'drink','What’s in your hand?',4);
+  if(s==='hour')return renderCards(HOUR,'hour','What time is it for you?',5);
+  if(s==='blitz')return renderBlitz();
+  if(s==='result')return renderResult();
+}
+function backBtn(){return '<button class="qz-back" onclick="go('+(state.i-1)+')">← Back</button>';}
+
+function renderStart(){
+  stage.innerHTML='<div class="qz-step qz-start"><p class="qz-kick">Build a set</p>'+
+    '<h1>We’ll read your vibe<br/>and curate five.</h1>'+
+    '<p>No notes to pick, no bottles to choose. Just a few honest questions — then a new set of five 2&nbsp;ml decants, assembled for you. The scents stay a surprise.</p>'+
+    '<button class="qz-next" onclick="go(1)">Begin</button></div>';
+}
+function renderMood(){
+  let h='<div class="qz-step"><p class="qz-kick">Step 1 · mood</p><h2 class="qz-q">Pick 3 that feel like you.</h2><p class="qz-sub">'+state.mood.length+' / 3 chosen</p><div class="qz-grid g-mood">';
+  MOOD.forEach((m,i)=>{ const sel=state.mood.includes(i)?' sel':(state.mood.length>=3?' ':' ');
+    h+='<div class="tile'+(state.mood.includes(i)?' sel':'')+'" style="background:'+m.grad+'" data-i="'+i+'"><div class="cap">'+m.cap+'</div></div>'; });
+  h+='</div><button class="qz-next" id="moodNext"'+(state.mood.length===3?'':' disabled')+' onclick="go(2)">Continue</button>'+backBtn()+'</div>';
+  stage.innerHTML=h;
+  stage.querySelectorAll('.tile').forEach(t=>t.addEventListener('click',()=>{
+    const i=+t.dataset.i; const k=state.mood.indexOf(i);
+    if(k>=0)state.mood.splice(k,1); else if(state.mood.length<3)state.mood.push(i);
+    renderMood();
   }));
 }
-
-function renderName(){
-  backBtn.hidden=false; state.step=0; renderProgress();
-  stage.innerHTML=
-    '<div class="quiz-step"><span class="kicker">A gift</span>'+
-    '<h2 class="quiz-q">Who is it for?</h2>'+
-    '<p style="color:var(--muted)">We\'ll put their name on it.</p>'+
-    '<input class="quiz-input" id="nameInput" placeholder="Their name" value="'+ (state.name||'') +'"/>'+
-    '<div style="margin-top:1.6rem"><button class="btn btn-solid" id="nameNext">Continue</button></div></div>';
-  $('nameInput').focus();
-  $('nameNext').addEventListener('click',()=>{ state.name=$('nameInput').value.trim(); state.step=1; renderQuestion(); });
-  $('nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ state.name=e.target.value.trim(); state.step=1; renderQuestion(); }});
+function renderTiles(arr,key,q,sub,grid,nextStep){
+  let h='<div class="qz-step"><p class="qz-kick">Step 2 · city</p><h2 class="qz-q">'+q+'</h2><p class="qz-sub">'+sub+'</p><div class="qz-grid '+grid+'">';
+  arr.forEach((m,i)=>{ h+='<div class="tile'+(state[key]===i?' sel':'')+'" style="background:'+m.grad+'" data-i="'+i+'"><div class="cap">'+m.cap+'</div></div>'; });
+  h+='</div>'+backBtn()+'</div>';
+  stage.innerHTML=h;
+  stage.querySelectorAll('.tile').forEach(t=>t.addEventListener('click',()=>{ state[key]=+t.dataset.i; render(); setTimeout(()=>go(nextStep),260); }));
 }
-
-function renderQuestion(){
-  backBtn.hidden=false; renderProgress();
-  const qi=state.step-1; const Q=QUESTIONS[qi];
-  let html='<div class="quiz-step"><span class="kicker">Question '+(qi+1)+' of '+QUESTIONS.length+'</span>'+
-    '<h2 class="quiz-q">'+Q.q+'</h2><div class="quiz-options">';
-  Q.opts.forEach((o,idx)=>{
-    html+='<button class="opt" data-tag="'+o.tag+'"><div class="opt-thumb" style="'+thumbStyle(o.thumb)+'"></div>'+
-      '<div class="opt-label">'+o.label+'</div><div class="opt-sub">'+o.sub+'</div></button>';
-  });
-  html+='</div></div>';
-  stage.innerHTML=html;
-  stage.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{
-    state.answers[qi]=b.getAttribute('data-tag');
-    if(state.step<QUESTIONS.length){ state.step++; renderQuestion(); } else { renderResult(); }
+function renderCards(arr,key,q,nextStep){
+  const labels={texture:'Step 3 · texture',drink:'Step 4 · ritual',hour:'Step 5 · hour'};
+  let h='<div class="qz-step"><p class="qz-kick">'+labels[key]+'</p><h2 class="qz-q">'+q+'</h2><div class="qz-grid g-cards">';
+  arr.forEach((o,i)=>{ h+='<div class="card-opt'+(state[key]===i?' sel':'')+'" data-i="'+i+'"><h4>'+o.l+'</h4><span>'+o.s+'</span></div>'; });
+  h+='</div>'+backBtn()+'</div>';
+  stage.innerHTML=h;
+  stage.querySelectorAll('.card-opt').forEach(t=>t.addEventListener('click',()=>{ state[key]=+t.dataset.i; render(); setTimeout(()=>go(nextStep),260); }));
+}
+function renderBlitz(){
+  let h='<div class="qz-step"><p class="qz-kick">Step 6 · instinct</p><h2 class="qz-q">Quick — don’t think.</h2><p class="qz-sub">Tap the one that’s more you.</p><div class="blitz">';
+  BLITZ.forEach((p,i)=>{ h+='<div class="blitz-row" data-i="'+i+'">'+
+    '<button class="'+(state.blitz[i]==='a'?'sel':'')+'" data-side="a">'+p.a.l+'</button>'+
+    '<button class="'+(state.blitz[i]==='b'?'sel':'')+'" data-side="b">'+p.b.l+'</button></div>'; });
+  const done=state.blitz.every(x=>x!=null);
+  h+='</div><button class="qz-next"'+(done?'':' disabled')+' id="blitzNext" onclick="go(7)">See my set</button>'+backBtn()+'</div>';
+  stage.innerHTML=h;
+  stage.querySelectorAll('.blitz-row button').forEach(b=>b.addEventListener('click',()=>{
+    const row=+b.parentElement.dataset.i; state.blitz[row]=b.dataset.side; renderBlitz();
   }));
 }
-
-function pickStory(ans){
-  let best=STORIES[0], score=-1;
-  STORIES.forEach(s=>{ const sc=ans.filter(a=>s.tags.includes(a)).length; if(sc>score){score=sc; best=s;} });
-  return best;
-}
-
-function vibeLine(ans){
-  const map={fresh:'fresh and bright',warm:'warm and sweet',dark:'dark and leathery',floral:'floral and powdery',
-    everyday:'easy to wear every day',work:'sharp enough for work',date:'made for getting closer',night:'built for the night',
-    sea:'with the southern sea in it',forest:'cool as a forest',citynight:'lit like a neon city',desert:'deep as the desert',
-    soft:'a soft, intimate trail',medium:'a confident trail',loud:'a trail that fills the room'};
-  return 'Five decants, '+map[ans[0]]+', '+map[ans[1]]+', '+map[ans[3]]+' — '+map[ans[2]]+'.';
-}
-
 function renderResult(){
-  backBtn.hidden=false; state.step=QUESTIONS.length; renderProgress();
-  const story=pickStory(state.answers);
-  const who = state.mode==='gift' ? ((state.name||'Their')+'’s Scent Story') : 'Your Scent Story';
-  const isGift = state.mode==='gift';
-  let html='<div class="quiz-step"><span class="kicker">'+(isGift?'A gift, curated':'Curated for you')+'</span>'+
-    '<h2 class="quiz-q" style="margin-bottom:1.4rem">'+who+'</h2>'+
-    '<div class="result-card">'+
-      '<div class="result-img" style="background-image:url(images/'+story.slug+'.png)"></div>'+
-      '<div class="result-body">'+
-        '<h3>'+who+'</h3>'+
-        '<p class="result-vibe">'+vibeLine(state.answers)+'</p>'+
-        '<p class="result-hint">Inspired by our <em>'+story.name+'</em> world. The five scents stay a surprise until they arrive.</p>'+
-        '<div class="result-meta"><span class="result-price">$50</span><span class="result-qty">5 × 2&nbsp;ml</span></div>'+
-        (isGift?'<textarea class="gift-note" id="giftNote" placeholder="Add a gift note (optional)"></textarea>':'')+
-        '<button class="btn btn-solid full" id="addResult">Add to bag</button>'+
-      '</div>'+
-    '</div>'+
-    '<div style="margin-top:1.6rem"><button class="quiz-back" id="restart">Start over</button></div></div>';
-  stage.innerHTML=html;
-  $('addResult').addEventListener('click',()=>{
-    const name = isGift ? ('Gift — '+who) : 'Your Scent Story';
-    try{ const c=JSON.parse(localStorage.getItem('ss_cart')||'[]'); c.push({name:name,price:50,qty:1}); localStorage.setItem('ss_cart',JSON.stringify(c)); }catch(e){}
+  const U=profile(); const set=buildSet(U); const name=archetype(U); const fp=fingerprint(U);
+  let h='<div class="qz-step"><p class="qz-kick">Your set</p>'+
+    '<h2 class="result-archetype">'+name+'</h2>'+
+    '<div class="result-fp">'+fp.map(f=>'<span>'+f+'</span>').join('')+'</div>'+
+    '<ul class="result-five">'+set.map((p,i)=>'<li>'+p.n+'<span>2 ml</span></li>').join('')+'</ul>'+
+    '<div class="result-meta"><span class="result-price">$50</span><span class="result-qty">5 × 2 ml · a new set</span></div>'+
+    '<button class="qz-next" id="addSet">Add to bag</button>'+
+    '<div><button class="qz-back" onclick="restart()">Start over</button></div>'+
+    '<p class="qz-sub" style="margin-top:1.6rem">Names shown for the concept — at launch they stay a surprise.</p></div>';
+  stage.innerHTML=h;
+  $('addSet').addEventListener('click',()=>{
+    try{const c=JSON.parse(localStorage.getItem('ss_cart')||'[]'); c.push({name:name+' — your set',price:50,qty:1}); localStorage.setItem('ss_cart',JSON.stringify(c));}catch(e){}
     location.href='index.html#bag';
   });
-  $('restart').addEventListener('click',renderMode);
 }
-
-backBtn.addEventListener('click',()=>{
-  if(state.step<=0){ return; }
-  if(state.step===1){ if(state.mode==='gift'){ renderName(); state.step=0;} else { renderMode(); } return; }
-  state.step--; renderQuestion();
-});
-
-// cart count in nav
-try{ const c=JSON.parse(localStorage.getItem('ss_cart')||'[]'); const n=c.reduce((a,i)=>a+(i.qty||1),0); $('cartCount').textContent=n; $('cartCount').style.visibility=n?'visible':'hidden'; }catch(e){}
-document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',()=>document.body.classList.remove('nav-open')));
-
-renderMode();
+function restart(){state={i:0,mood:[],city:null,texture:null,drink:null,hour:null,blitz:[null,null,null,null,null]};render();}
+window.go=go; window.restart=restart;
+render();
 </script>
 </body>
 </html>
