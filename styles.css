@@ -43,7 +43,7 @@ a{color:inherit;text-decoration:none}
 .nav.scrolled{border-color:var(--line-soft)}
 .nav-inner{max-width:var(--maxw);margin:0 auto;padding:1.15rem 1.8rem;display:flex;align-items:center;gap:2rem}
 .brand{font-family:var(--disp);font-size:1.4rem;font-weight:400;letter-spacing:.01em;display:inline-flex;align-items:center;gap:.42em}
-.brand-mark{width:1.05em;height:.8em;color:var(--accent);flex-shrink:0}
+.brand-mark{width:.62em;height:.92em;color:var(--accent);flex-shrink:0}
 .nav-links{margin-left:auto;display:flex;gap:2.2rem}
 .nav-links a{font-size:.82rem;letter-spacing:.06em;color:var(--muted);transition:.25s}
 .nav-links a:hover{color:var(--ink)}
