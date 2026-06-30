@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Scent Stories — Build your set</title>
+<meta name="description" content="Take the quiz and we'll curate a personal surprise set of five — for yourself or as a gift." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav scrolled" id="nav">
+  <div class="nav-inner">
+    <a href="index.html#top" class="brand"><svg class="brand-mark" viewBox="0 0 24 32" aria-hidden="true"><rect x="8.5" y="2" width="7" height="4.4" rx="1" fill="currentColor"/><rect x="10.5" y="6" width="3" height="2" fill="currentColor"/><rect x="5.5" y="8" width="13" height="22" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Scent&nbsp;Stories</a>
+    <nav class="nav-links">
+      <a href="index.html#sets">Stories</a>
+      <a href="index.html#mystery">Mystery</a>
+      <a href="quiz.html">Build a set</a>
+      <a href="account.html">Account</a>
+    </nav>
+    <a class="cart-btn" id="cartBtn" href="index.html#bag" aria-label="Open bag">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6.5 8.5 h11 l-1 12 H7.5 Z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 8.5 a3 3 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+      <span class="cart-count" id="cartCount">0</span>
+    </a>
+    <button class="nav-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- QUIZ -->
+<section class="quiz-wrap">
+  <div class="quiz-progress" id="progress" hidden></div>
+  <div id="quizStage"></div>
+  <div style="text-align:center"><button class="quiz-back" id="backBtn" hidden>← Back</button></div>
+</section>
+
+<script>
+const $=id=>document.getElementById(id);
+const stage=$('quizStage'), progress=$('progress'), backBtn=$('backBtn');
+
+const QUESTIONS=[
+  {key:'vibe', q:'What pulls you in?', opts:[
+    {label:'Fresh & bright', sub:'citrus, sea, clean', tag:'fresh', thumb:'grad:linear-gradient(155deg,#e9ddc6,#c9a87d)'},
+    {label:'Warm & sweet', sub:'amber, vanilla, spice', tag:'warm', thumb:'grad:linear-gradient(155deg,#e9cfb6,#b97a5b)'},
+    {label:'Dark & leathery', sub:'smoke, leather, oud', tag:'dark', thumb:'grad:linear-gradient(155deg,#3e3f45,#17161b)'},
+    {label:'Floral & powdery', sub:'iris, rose, lipstick', tag:'floral', thumb:'grad:linear-gradient(155deg,#e7d3d9,#b78ea0)'},
+  ]},
+  {key:'occasion', q:'When do you want to wear it?', opts:[
+    {label:'Every day', sub:'your easy signature', tag:'everyday', thumb:'grad:linear-gradient(155deg,#e0e3e5,#99a2a9)'},
+    {label:'At work', sub:'sharp, quietly expensive', tag:'work', thumb:'grad:linear-gradient(155deg,#ced3d7,#5a6068)'},
+    {label:'On a date', sub:'lean-closer warmth', tag:'date', thumb:'grad:linear-gradient(155deg,#ffd24d,#ff5a3c)'},
+    {label:'A night out', sub:'loud on purpose', tag:'night', thumb:'grad:linear-gradient(155deg,#6a7bff,#15110d)'},
+  ]},
+  {key:'place', q:'Where does it take you?', opts:[
+    {label:'The southern sea', sub:'sun, citrus, salt', tag:'sea', thumb:'img:summer-in-italy.png'},
+    {label:'Forests & mountains', sub:'moss, pine, cold air', tag:'forest', thumb:'img:scottish-highlands.png'},
+    {label:'A neon city at night', sub:'rain, glass, energy', tag:'citynight', thumb:'img:tokyo-rain.png'},
+    {label:'The eastern desert', sub:'spice, amber, smoke', tag:'desert', thumb:'img:desert-nights.png'},
+  ]},
+  {key:'sillage', q:'How big should the trail be?', opts:[
+    {label:'Soft & intimate', sub:'just for those close', tag:'soft', thumb:'grad:linear-gradient(155deg,#efe7d8,#cdbfa6)'},
+    {label:'Moderate', sub:'noticed, not loud', tag:'medium', thumb:'grad:linear-gradient(155deg,#d8c9a8,#a98f63)'},
+    {label:'Room-filling', sub:'announce yourself', tag:'loud', thumb:'grad:linear-gradient(155deg,#c9a87d,#7a4a23)'},
+  ]},
+];
+
+const STORIES=[
+  {name:'Summer in Italy', slug:'summer-in-italy', tags:['fresh','sea','everyday','soft']},
+  {name:'Berlin Midnight', slug:'berlin-midnight', tags:['dark','citynight','night','loud']},
+  {name:'Winter London', slug:'winter-london', tags:['warm','citynight','work','medium']},
+  {name:'Scottish Highlands', slug:'scottish-highlands', tags:['fresh','forest','everyday','medium']},
+  {name:'The Boardroom', slug:'the-boardroom', tags:['fresh','citynight','work','medium']},
+  {name:'Marrakech Souk', slug:'marrakech-souk', tags:['warm','desert','night','loud']},
+  {name:'Tokyo Rain', slug:'tokyo-rain', tags:['fresh','citynight','everyday','soft']},
+  {name:'Paris Affair', slug:'paris-affair', tags:['floral','citynight','date','medium']},
+  {name:'Desert Nights', slug:'desert-nights', tags:['dark','desert','night','loud']},
+  {name:'New York Penthouse', slug:'new-york-penthouse', tags:['warm','citynight','night','loud']},
+  {name:'First Date', slug:'first-date', tags:['warm','date','everyday','medium']},
+];
+
+let state={mode:null, name:'', step:0, answers:[]};
+
+function thumbStyle(t){ return t.indexOf('img:')===0 ? "background-image:url(images/"+t.slice(4)+")" : "background:"+t.slice(5); }
+
+function renderProgress(){
+  progress.hidden = state.step<1;
+  progress.innerHTML='';
+  for(let i=0;i<QUESTIONS.length;i++){ const s=document.createElement('span'); if(i< state.step) s.className='on'; progress.appendChild(s); }
+}
+
+function renderMode(){
+  state.step=0; renderProgress(); backBtn.hidden=true;
+  stage.innerHTML =
+    '<div class="quiz-step"><span class="kicker">Build a set</span>'+
+    '<h2 class="quiz-q">Five 2&nbsp;ml decants, picked for you.</h2>'+
+    '<p style="color:var(--muted);max-width:520px;margin:0 auto 2.2rem">Answer four quick questions and we\'ll curate a personal surprise set. You don\'t pick the scents — that\'s the fun.</p>'+
+    '<div class="mode-grid">'+
+      '<div class="mode-tile" data-mode="self"><div class="mt-bg" style="background-image:url(images/about.png)"></div><div class="mt-text"><h3>For myself</h3><p>Discover your next signature.</p></div></div>'+
+      '<div class="mode-tile" data-mode="gift"><div class="mt-bg" style="background-image:url(images/paris-affair.png)"></div><div class="mt-text"><h3>As a gift</h3><p>Build a set for someone you like.</p></div></div>'+
+    '</div></div>';
+  stage.querySelectorAll('.mode-tile').forEach(t=>t.addEventListener('click',()=>{
+    state.mode=t.getAttribute('data-mode'); state.answers=[];
+    if(state.mode==='gift') renderName(); else { state.step=1; renderQuestion(); }
+  }));
+}
+
+function renderName(){
+  backBtn.hidden=false; state.step=0; renderProgress();
+  stage.innerHTML=
+    '<div class="quiz-step"><span class="kicker">A gift</span>'+
+    '<h2 class="quiz-q">Who is it for?</h2>'+
+    '<p style="color:var(--muted)">We\'ll put their name on it.</p>'+
+    '<input class="quiz-input" id="nameInput" placeholder="Their name" value="'+ (state.name||'') +'"/>'+
+    '<div style="margin-top:1.6rem"><button class="btn btn-solid" id="nameNext">Continue</button></div></div>';
+  $('nameInput').focus();
+  $('nameNext').addEventListener('click',()=>{ state.name=$('nameInput').value.trim(); state.step=1; renderQuestion(); });
+  $('nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ state.name=e.target.value.trim(); state.step=1; renderQuestion(); }});
+}
+
+function renderQuestion(){
+  backBtn.hidden=false; renderProgress();
+  const qi=state.step-1; const Q=QUESTIONS[qi];
+  let html='<div class="quiz-step"><span class="kicker">Question '+(qi+1)+' of '+QUESTIONS.length+'</span>'+
+    '<h2 class="quiz-q">'+Q.q+'</h2><div class="quiz-options">';
+  Q.opts.forEach((o,idx)=>{
+    html+='<button class="opt" data-tag="'+o.tag+'"><div class="opt-thumb" style="'+thumbStyle(o.thumb)+'"></div>'+
+      '<div class="opt-label">'+o.label+'</div><div class="opt-sub">'+o.sub+'</div></button>';
+  });
+  html+='</div></div>';
+  stage.innerHTML=html;
+  stage.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>{
+    state.answers[qi]=b.getAttribute('data-tag');
+    if(state.step<QUESTIONS.length){ state.step++; renderQuestion(); } else { renderResult(); }
+  }));
+}
+
+function pickStory(ans){
+  let best=STORIES[0], score=-1;
+  STORIES.forEach(s=>{ const sc=ans.filter(a=>s.tags.includes(a)).length; if(sc>score){score=sc; best=s;} });
+  return best;
+}
+
+function vibeLine(ans){
+  const map={fresh:'fresh and bright',warm:'warm and sweet',dark:'dark and leathery',floral:'floral and powdery',
+    everyday:'easy to wear every day',work:'sharp enough for work',date:'made for getting closer',night:'built for the night',
+    sea:'with the southern sea in it',forest:'cool as a forest',citynight:'lit like a neon city',desert:'deep as the desert',
+    soft:'a soft, intimate trail',medium:'a confident trail',loud:'a trail that fills the room'};
+  return 'Five decants, '+map[ans[0]]+', '+map[ans[1]]+', '+map[ans[3]]+' — '+map[ans[2]]+'.';
+}
+
+function renderResult(){
+  backBtn.hidden=false; state.step=QUESTIONS.length; renderProgress();
+  const story=pickStory(state.answers);
+  const who = state.mode==='gift' ? ((state.name||'Their')+'’s Scent Story') : 'Your Scent Story';
+  const isGift = state.mode==='gift';
+  let html='<div class="quiz-step"><span class="kicker">'+(isGift?'A gift, curated':'Curated for you')+'</span>'+
+    '<h2 class="quiz-q" style="margin-bottom:1.4rem">'+who+'</h2>'+
+    '<div class="result-card">'+
+      '<div class="result-img" style="background-image:url(images/'+story.slug+'.png)"></div>'+
+      '<div class="result-body">'+
+        '<h3>'+who+'</h3>'+
+        '<p class="result-vibe">'+vibeLine(state.answers)+'</p>'+
+        '<p class="result-hint">Inspired by our <em>'+story.name+'</em> world. The five scents stay a surprise until they arrive.</p>'+
+        '<div class="result-meta"><span class="result-price">$50</span><span class="result-qty">5 × 2&nbsp;ml</span></div>'+
+        (isGift?'<textarea class="gift-note" id="giftNote" placeholder="Add a gift note (optional)"></textarea>':'')+
+        '<button class="btn btn-solid full" id="addResult">Add to bag</button>'+
+      '</div>'+
+    '</div>'+
+    '<div style="margin-top:1.6rem"><button class="quiz-back" id="restart">Start over</button></div></div>';
+  stage.innerHTML=html;
+  $('addResult').addEventListener('click',()=>{
+    const name = isGift ? ('Gift — '+who) : 'Your Scent Story';
+    try{ const c=JSON.parse(localStorage.getItem('ss_cart')||'[]'); c.push({name:name,price:50,qty:1}); localStorage.setItem('ss_cart',JSON.stringify(c)); }catch(e){}
+    location.href='index.html#bag';
+  });
+  $('restart').addEventListener('click',renderMode);
+}
+
+backBtn.addEventListener('click',()=>{
+  if(state.step<=0){ return; }
+  if(state.step===1){ if(state.mode==='gift'){ renderName(); state.step=0;} else { renderMode(); } return; }
+  state.step--; renderQuestion();
+});
+
+// cart count in nav
+try{ const c=JSON.parse(localStorage.getItem('ss_cart')||'[]'); const n=c.reduce((a,i)=>a+(i.qty||1),0); $('cartCount').textContent=n; $('cartCount').style.visibility=n?'visible':'hidden'; }catch(e){}
+document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',()=>document.body.classList.remove('nav-open')));
+
+renderMode();
+</script>
+</body>
+</html>

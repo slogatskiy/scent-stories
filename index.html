@@ -22,8 +22,8 @@
       <a href="#map">Map</a>
       <a href="#advent">Advent</a>
       <a href="#mystery">Mystery</a>
+      <a href="quiz.html">Build a set</a>
       <a href="#about">About</a>
-      <a href="#how">How</a>
       <a href="account.html">Account</a>
     </nav>
     <button class="cart-btn" id="cartBtn" aria-label="Open bag">
@@ -46,6 +46,7 @@
       A city, a season, a night. Discover in 2&nbsp;ml. Commit only when you're sure.</p>
     <div class="hero-actions">
       <a href="#sets" class="link-arrow">Explore the stories</a>
+      <a href="quiz.html" class="link-arrow">Build your set</a>
       <a href="#mystery" class="link-arrow muted">Or roll a mystery box</a>
     </div>
   </div>
@@ -534,6 +535,7 @@ cart.querySelectorAll('[data-cart-close]').forEach(el=>el.addEventListener('clic
 $('cartCheckout').addEventListener('click',()=>{ closeCart(); location.hash='#waitlist'; });
 $('modalAdd').addEventListener('click',()=>{ if(currentProduct){ addToCart(currentProduct,currentPrice||0); closeModal(); openCart(); } });
 renderCart();
+if(location.hash==='#bag'){ openCart(); }
 
 addEventListener('keydown',e=>{ if(e.key==='Escape'){closeModal();closeCart();} });
 </script>
