@@ -216,17 +216,17 @@ function renderMood(){
 function renderTiles(arr,key,q,sub,grid,nextStep){
   let h='<div class="qz-step"><p class="qz-kick">Step 2 · city</p><h2 class="qz-q">'+q+'</h2><p class="qz-sub">'+sub+'</p><div class="qz-grid '+grid+'">';
   arr.forEach((m,i)=>{ h+='<div class="tile'+(state[key]===i?' sel':'')+'" style="background:'+m.grad+'" data-i="'+i+'"><div class="cap">'+m.cap+'</div></div>'; });
-  h+='</div>'+backBtn()+'</div>';
+  h+='</div><button class="qz-next"'+(state[key]!=null?'':' disabled')+' onclick="go('+nextStep+')">Continue</button>'+backBtn()+'</div>';
   stage.innerHTML=h;
-  stage.querySelectorAll('.tile').forEach(t=>t.addEventListener('click',()=>{ state[key]=+t.dataset.i; render(); setTimeout(()=>go(nextStep),260); }));
+  stage.querySelectorAll('.tile').forEach(t=>t.addEventListener('click',()=>{ state[key]=+t.dataset.i; render(); }));
 }
 function renderCards(arr,key,q,nextStep){
   const labels={texture:'Step 3 · texture',drink:'Step 4 · ritual',hour:'Step 5 · hour'};
   let h='<div class="qz-step"><p class="qz-kick">'+labels[key]+'</p><h2 class="qz-q">'+q+'</h2><div class="qz-grid g-cards">';
   arr.forEach((o,i)=>{ h+='<div class="card-opt'+(state[key]===i?' sel':'')+'" data-i="'+i+'"><h4>'+o.l+'</h4><span>'+o.s+'</span></div>'; });
-  h+='</div>'+backBtn()+'</div>';
+  h+='</div><button class="qz-next"'+(state[key]!=null?'':' disabled')+' onclick="go('+nextStep+')">Continue</button>'+backBtn()+'</div>';
   stage.innerHTML=h;
-  stage.querySelectorAll('.card-opt').forEach(t=>t.addEventListener('click',()=>{ state[key]=+t.dataset.i; render(); setTimeout(()=>go(nextStep),260); }));
+  stage.querySelectorAll('.card-opt').forEach(t=>t.addEventListener('click',()=>{ state[key]=+t.dataset.i; render(); }));
 }
 function renderBlitz(){
   let h='<div class="qz-step"><p class="qz-kick">Step 6 · instinct</p><h2 class="qz-q">Quick — don’t think.</h2><p class="qz-sub">Tap the one that’s more you.</p><div class="blitz">';
