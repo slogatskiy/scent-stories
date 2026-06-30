@@ -312,20 +312,15 @@ a{color:inherit;text-decoration:none}
 .set-foot{margin-top:auto}
 
 /* ============ SCENT MAP ============ */
-.map-wrap{max-width:var(--maxw);margin:0 auto;background:var(--ink);border:1px solid var(--line);border-radius:6px;padding:2.2rem 1.6rem}
-.world-map{width:100%;height:auto;display:block;overflow:visible}
-.map-grid line{stroke:rgba(201,168,125,.15);stroke-width:.5}
-.map-frame{fill:none;stroke:rgba(201,168,125,.22);stroke-width:.8}
-.map-route{fill:none;stroke:rgba(201,168,125,.22);stroke-width:.7;stroke-dasharray:2 4}
-.pin{cursor:pointer;outline:none}
-.pin-glow{fill:#c9a87d;opacity:.2;transform-box:fill-box;transform-origin:center;animation:pinpulse 3s ease-in-out infinite}
-.pin-dot{fill:#c9a87d;transition:.25s}
-.pin:hover .pin-dot,.pin:focus .pin-dot{fill:#fff}
-.pin:hover .pin-glow,.pin:focus .pin-glow{opacity:.42}
-.pin-label{opacity:0;transition:.25s;pointer-events:none}
-.pin-label text{fill:#f5f2eb;font-family:var(--disp);font-size:11px;text-anchor:middle;paint-order:stroke;stroke:rgba(20,18,14,.75);stroke-width:3px}
-.pin:hover .pin-label,.pin:focus .pin-label{opacity:1}
-@keyframes pinpulse{0%,100%{opacity:.16;transform:scale(1)}50%{opacity:.34;transform:scale(1.35)}}
+.map-wrap{max-width:var(--maxw);margin:0 auto;background:var(--ink);border:1px solid var(--line);border-radius:6px;padding:2rem 1.6rem}
+.map-stage{position:relative;width:100%;max-width:940px;margin:0 auto}
+.map-bg{width:100%;display:block;opacity:.92}
+.pin{position:absolute;transform:translate(-50%,-50%);background:none;border:0;padding:0;cursor:pointer;outline:none}
+.pin .dot{display:block;width:10px;height:10px;border-radius:50%;background:#c9a87d;box-shadow:0 0 0 0 rgba(201,168,125,.5);animation:pinpulse 3s ease-in-out infinite;transition:background .2s}
+.pin .plabel{position:absolute;left:50%;bottom:150%;transform:translateX(-50%);white-space:nowrap;font-family:var(--disp);font-size:.82rem;color:#f5f2eb;background:rgba(20,18,14,.82);padding:.22em .65em;border-radius:4px;opacity:0;transition:.2s;pointer-events:none}
+.pin:hover .dot,.pin:focus .dot{background:#fff}
+.pin:hover .plabel,.pin:focus .plabel{opacity:1}
+@keyframes pinpulse{0%{box-shadow:0 0 0 0 rgba(201,168,125,.5)}70%{box-shadow:0 0 0 11px rgba(201,168,125,0)}100%{box-shadow:0 0 0 0 rgba(201,168,125,0)}}
 .map-hint{text-align:center;color:var(--muted);font-size:.78rem;margin-top:1.4rem}
 
 /* ============ REVEAL ============ */
