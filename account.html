@@ -60,11 +60,11 @@
 
     <!-- Reserved -->
     <article class="dash-card dash-wide">
-      <div class="dash-card-head"><h3>Reserved stories</h3><span class="dash-count" id="resCount">0</span></div>
+      <div class="dash-card-head"><h3>Your bag</h3><span class="dash-count" id="resCount">0</span></div>
       <ul class="res-list" id="resList"></ul>
-      <p class="res-empty" id="resEmpty" hidden>Nothing reserved yet.
+      <p class="res-empty" id="resEmpty" hidden>Your bag is empty.
         <a href="index.html#sets" class="link-arrow">Explore the stories</a></p>
-      <p class="res-foot">Reserved items are held for the first drop. We'll email you when it's live.</p>
+      <p class="res-foot" id="resFoot">Manage quantities in the bag on the main page. Checkout opens at the first drop.</p>
     </article>
 
     <!-- Decant credit -->
@@ -110,7 +110,7 @@
 <script>
 const $=id=>document.getElementById(id);
 function getEmail(){ try{return localStorage.getItem('ss_email');}catch(e){return null;} }
-function getReserved(){ try{return JSON.parse(localStorage.getItem('ss_reserved')||'[]');}catch(e){return [];} }
+function getCart(){ try{return JSON.parse(localStorage.getItem('ss_cart')||'[]');}catch(e){return [];} }
 function nameFromEmail(e){ if(!e)return 'friend'; const n=e.split('@')[0].replace(/[._]/g,' '); return n.charAt(0).toUpperCase()+n.slice(1); }
 
 function render(){
@@ -119,21 +119,22 @@ function render(){
   $('signin').hidden=true; $('dash').hidden=false;
   $('dashName').textContent=nameFromEmail(email);
   $('dashEmail').textContent=email;
-  const res=getReserved();
-  $('resCount').textContent=res.length;
+  const cartArr=getCart();
+  const count=cartArr.reduce((n,i)=>n+(i.qty||1),0);
+  $('resCount').textContent=count;
   const list=$('resList'); list.innerHTML='';
-  if(res.length===0){ $('resEmpty').hidden=false; }
+  if(cartArr.length===0){ $('resEmpty').hidden=false; $('resFoot').style.display='none'; }
   else{
-    $('resEmpty').hidden=true;
-    res.forEach(name=>{
+    $('resEmpty').hidden=true; $('resFoot').style.display='';
+    cartArr.forEach((it,idx)=>{
       const li=document.createElement('li');
       li.className='res-item';
-      const span=document.createElement('span'); span.textContent=name;
-      const status=document.createElement('span'); status.className='res-status'; status.textContent='Reserved';
-      const rm=document.createElement('button'); rm.className='res-remove'; rm.textContent='Remove'; rm.setAttribute('aria-label','Remove '+name);
+      const span=document.createElement('span'); span.textContent=it.name+(it.qty>1?'  × '+it.qty:'');
+      const status=document.createElement('span'); status.className='res-status'; status.textContent='$'+(Math.round((it.price||0)*(it.qty||1)*100)/100);
+      const rm=document.createElement('button'); rm.className='res-remove'; rm.textContent='Remove'; rm.setAttribute('aria-label','Remove '+it.name);
       rm.addEventListener('click',()=>{
-        const cur=getReserved().filter(x=>x!==name);
-        localStorage.setItem('ss_reserved',JSON.stringify(cur)); render();
+        const cur=getCart(); cur.splice(idx,1);
+        localStorage.setItem('ss_cart',JSON.stringify(cur)); render();
       });
       const meta=document.createElement('span'); meta.className='res-meta'; meta.append(status,rm);
       li.append(span,meta); list.appendChild(li);

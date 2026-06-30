@@ -26,6 +26,10 @@
       <a href="#how">How</a>
       <a href="account.html">Account</a>
     </nav>
+    <button class="cart-btn" id="cartBtn" aria-label="Open bag">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6.5 8.5 h11 l-1 12 H7.5 Z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 8.5 a3 3 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+      <span class="cart-count" id="cartCount">0</span>
+    </button>
     <a href="#waitlist" class="btn btn-pill nav-cta">Join the list</a>
     <button class="nav-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">
       <span></span><span></span><span></span>
@@ -423,11 +427,26 @@
       <p class="modal-price" id="modalPrice"></p>
       <p class="modal-listlabel" id="modalListLabel">Inside</p>
       <ul class="modal-list" id="modalList"></ul>
-      <p class="modal-next">Reserve yours — the first drop ships this autumn. Join the list and we'll
-        hold your pick, plus a founding-member discount.</p>
-      <a href="#waitlist" class="btn btn-solid full" id="modalReserve" data-close>Reserve yours →</a>
+      <p class="modal-next">First drop ships this autumn. Add it to your bag now — nothing is charged,
+        this is a concept.</p>
+      <button class="btn btn-solid full" id="modalAdd">Add to bag</button>
     </div>
   </div>
+</div>
+
+<!-- CART DRAWER -->
+<div class="cart" id="cart" aria-hidden="true">
+  <div class="cart-overlay" data-cart-close></div>
+  <aside class="cart-panel" role="dialog" aria-label="Your bag">
+    <div class="cart-head"><h3>Your bag</h3><button class="cart-x" data-cart-close aria-label="Close">×</button></div>
+    <ul class="cart-items" id="cartItems"></ul>
+    <p class="cart-empty" id="cartEmpty">Your bag is empty. <a href="#sets" data-cart-close class="link-arrow">Explore the stories</a></p>
+    <div class="cart-foot" id="cartFoot" hidden>
+      <div class="cart-sub"><span>Subtotal</span><span id="cartSubtotal">$0</span></div>
+      <p class="cart-note">Concept demo — checkout isn't live yet. The first drop ships this autumn.</p>
+      <button class="btn btn-solid full" id="cartCheckout">Checkout</button>
+    </div>
+  </aside>
 </div>
 
 <script>
@@ -442,7 +461,7 @@ document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',
 
 // product modal
 const modal=document.getElementById('modal');
-let currentProduct=null;
+let currentProduct=null, currentPrice=0;
 function openModal(card){
   const type = card.classList.contains('advent')?'advent':card.classList.contains('mbox')?'mystery':'set';
   const media=card.querySelector('.set-img,.advent-img,.mbox-img');
@@ -455,6 +474,7 @@ function openModal(card){
   // price + qty
   const price=card.querySelector('.price'), qty=card.querySelector('.qty');
   $('modalPrice').textContent = [price&&price.textContent, qty&&qty.textContent].filter(Boolean).join('  ·  ');
+  currentPrice = price?parseFloat(price.textContent.replace(/[^0-9.]/g,'')):0;
   // list (set notes, or mystery facts)
   const list=$('modalList'); list.innerHTML='';
   const noteEls=card.querySelectorAll('.notes li');
@@ -474,13 +494,48 @@ document.querySelectorAll('.set,.advent,.mbox').forEach(card=>{
   card.addEventListener('click',e=>{ if(e.target.closest('a'))return; openModal(card); });
 });
 modal.querySelectorAll('[data-close]').forEach(el=>el.addEventListener('click',closeModal));
-$('modalReserve').addEventListener('click',()=>{
-  if(currentProduct){try{const r=JSON.parse(localStorage.getItem('ss_reserved')||'[]'); if(!r.includes(currentProduct)){r.push(currentProduct); localStorage.setItem('ss_reserved',JSON.stringify(r));}}catch(e){}}
-});
 document.querySelectorAll('.pin').forEach(pin=>{
   pin.addEventListener('click',()=>{ const t=pin.getAttribute('data-target'); const card=[...document.querySelectorAll('.set')].find(c=>c.querySelector('h3').textContent===t); if(card)openModal(card); });
 });
-addEventListener('keydown',e=>{ if(e.key==='Escape')closeModal(); });
+
+// cart
+const cart=$('cart');
+function getCart(){try{return JSON.parse(localStorage.getItem('ss_cart')||'[]');}catch(e){return [];}}
+function saveCart(c){try{localStorage.setItem('ss_cart',JSON.stringify(c));}catch(e){} renderCart();}
+function addToCart(name,price){const c=getCart();const it=c.find(x=>x.name===name);if(it){it.qty++;}else{c.push({name:name,price:price,qty:1});}saveCart(c);}
+function cartCount(){return getCart().reduce((n,i)=>n+i.qty,0);}
+function money(n){return '$'+(Math.round(n*100)/100);}
+function renderCart(){
+  const c=getCart(); const n=cartCount();
+  $('cartCount').textContent=n; $('cartCount').style.visibility=n?'visible':'hidden';
+  const list=$('cartItems'); list.innerHTML='';
+  if(!c.length){$('cartEmpty').hidden=false; $('cartFoot').hidden=true; return;}
+  $('cartEmpty').hidden=true; $('cartFoot').hidden=false;
+  c.forEach((it,idx)=>{
+    const li=document.createElement('li'); li.className='cart-item';
+    const info=document.createElement('div'); info.className='ci-info';
+    info.innerHTML='<span class="ci-name"></span><span class="ci-price"></span>';
+    info.querySelector('.ci-name').textContent=it.name; info.querySelector('.ci-price').textContent=money(it.price);
+    const ctrl=document.createElement('div'); ctrl.className='ci-qty';
+    const minus=document.createElement('button'); minus.textContent='−'; minus.setAttribute('aria-label','Decrease');
+    const q=document.createElement('span'); q.textContent=it.qty;
+    const plus=document.createElement('button'); plus.textContent='+'; plus.setAttribute('aria-label','Increase');
+    minus.addEventListener('click',()=>{const a=getCart();a[idx].qty--;if(a[idx].qty<=0)a.splice(idx,1);saveCart(a);});
+    plus.addEventListener('click',()=>{const a=getCart();a[idx].qty++;saveCart(a);});
+    ctrl.append(minus,q,plus);
+    li.append(info,ctrl); list.appendChild(li);
+  });
+  $('cartSubtotal').textContent=money(c.reduce((s,i)=>s+i.price*i.qty,0));
+}
+function openCart(){cart.classList.add('open');cart.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';}
+function closeCart(){cart.classList.remove('open');cart.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+$('cartBtn').addEventListener('click',openCart);
+cart.querySelectorAll('[data-cart-close]').forEach(el=>el.addEventListener('click',closeCart));
+$('cartCheckout').addEventListener('click',()=>{ closeCart(); location.hash='#waitlist'; });
+$('modalAdd').addEventListener('click',()=>{ if(currentProduct){ addToCart(currentProduct,currentPrice||0); closeModal(); openCart(); } });
+renderCart();
+
+addEventListener('keydown',e=>{ if(e.key==='Escape'){closeModal();closeCart();} });
 </script>
 </body>
 </html>
