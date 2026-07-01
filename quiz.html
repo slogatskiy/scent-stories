@@ -106,12 +106,12 @@ const MOOD=[
  {cap:'Pine cabin',grad:'linear-gradient(150deg,#7d9c7e,#26402b)',x:v(0,3,0,0,0,1)},
 ];
 const CITY=[
- {cap:'Tropical island',grad:'linear-gradient(150deg,#7fe3d6,#1f7a86)',x:v(3,0,1,0,0,0)},
- {cap:'Alpine summit',grad:'linear-gradient(150deg,#cfe0e6,#5a7d6a)',x:v(1,3,0,0,0,0)},
- {cap:'Kyoto garden',grad:'linear-gradient(150deg,#9bbf86,#2f4a33)',x:v(0,2,0,1,0,2)},
- {cap:'Tuscan vineyard',grad:'linear-gradient(150deg,#e6c178,#9a5a2a)',x:v(1,1,2,0,0,0)},
- {cap:'Icelandic coast',grad:'linear-gradient(150deg,#9aa6ad,#23303a)',x:v(1,2,0,0,2,0)},
- {cap:'Istanbul bazaar',grad:'linear-gradient(150deg,#e0a85a,#7a2f2a)',x:v(0,0,2,0,0,3)},
+ {cap:'Tropical island',img:'images/city-1.png',grad:'linear-gradient(150deg,#7fe3d6,#1f7a86)',x:v(3,0,1,0,0,0)},
+ {cap:'Alpine summit',img:'images/city-2.png',grad:'linear-gradient(150deg,#cfe0e6,#5a7d6a)',x:v(1,3,0,0,0,0)},
+ {cap:'Kyoto garden',img:'images/city-3.png',grad:'linear-gradient(150deg,#9bbf86,#2f4a33)',x:v(0,2,0,1,0,2)},
+ {cap:'Tuscan vineyard',img:'images/city-4.png',grad:'linear-gradient(150deg,#e6c178,#9a5a2a)',x:v(1,1,2,0,0,0)},
+ {cap:'Icelandic coast',img:'images/city-5.png',grad:'linear-gradient(150deg,#9aa6ad,#23303a)',x:v(1,2,0,0,2,0)},
+ {cap:'Istanbul bazaar',img:'images/city-6.png',grad:'linear-gradient(150deg,#e0a85a,#7a2f2a)',x:v(0,0,2,0,0,3)},
 ];
 const TEXTURE=[
  {l:'Linen',s:'cool, easy',x:v(2,1,0,0,0,0)},
@@ -326,7 +326,8 @@ function renderMood(){
 }
 function renderTiles(arr,key,q,sub,grid,nextStep){
   let h='<div class="qz-step"><p class="qz-kick">Step 2 · city</p><h2 class="qz-q">'+q+'</h2><p class="qz-sub">'+sub+'</p><div class="qz-grid '+grid+'">';
-  arr.forEach((m,i)=>{ h+='<div class="tile'+(state[key]===i?' sel':'')+'" style="background:'+m.grad+'" data-i="'+i+'"><div class="cap">'+m.cap+'</div></div>'; });
+  arr.forEach((m,i)=>{ const bg=m.img?"background:url('"+m.img+"') center/cover, "+m.grad:"background:"+m.grad;
+    h+='<div class="tile'+(state[key]===i?' sel':'')+'" style="'+bg+'" data-i="'+i+'"><div class="cap">'+m.cap+'</div></div>'; });
   h+='</div><button class="qz-next"'+(state[key]!=null?'':' disabled')+' onclick="go('+nextStep+')">Continue</button>'+backBtn()+'</div>';
   stage.innerHTML=h;
   stage.querySelectorAll('.tile').forEach(t=>t.addEventListener('click',()=>{ state[key]=+t.dataset.i; render(); }));
