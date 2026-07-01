@@ -243,6 +243,7 @@ a{color:inherit;text-decoration:none}
 .stars{color:var(--accent);letter-spacing:.18em;font-size:.92rem}
 .review blockquote{font-family:var(--disp);font-weight:300;font-size:1.22rem;line-height:1.4;color:var(--ink)}
 .review figcaption{font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.swipe-hint{display:none}
 
 /* ============ FOOTER LINK ============ */
 .footer-link{color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:1px;transition:.25s}
@@ -461,7 +462,28 @@ body.quizdark{background:#100f0d;color:#f3efe7}
   .price{font-size:1.02rem}
   .qty{font-size:.6rem}
   .open-hint{display:none}
-  .mbox-feature{grid-column:span 2}
+  .mbox-feature{grid-column:auto}   /* uniform 2-up, no odd full-width strip */
+
+  /* about: photo + text side by side, both compact */
+  .about-grid{grid-template-columns:.72fr 1fr;gap:1rem;align-items:start}
+  .about-media{max-width:none}
+  .about-img{aspect-ratio:3/4}
+  .about-text .kicker{font-size:.6rem}
+  .about-text h2{font-size:1.35rem;margin:.4rem 0 .7rem;line-height:1.15}
+  .about-text p{font-size:.82rem;margin-bottom:.6rem;max-width:none;line-height:1.55}
+
+  /* reviews: horizontal swipe instead of a tall stack */
+  .reviews-grid{display:flex;overflow-x:auto;gap:.8rem;scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;padding:.2rem .1rem;margin:0 -1.1rem;padding-left:1.1rem;padding-right:1.1rem}
+  .reviews-grid::-webkit-scrollbar{display:none}
+  .review{flex:0 0 82%;scroll-snap-align:center;padding:1.5rem 1.4rem}
+  .review blockquote{font-size:1.08rem}
+  .swipe-hint{display:block;text-align:center;margin-top:1.2rem;font-size:.66rem;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--accent)}
+
+  /* waitlist: trim the oversized black block */
+  .waitlist{padding:3.4rem 1.2rem}
+  .waitlist p{margin-bottom:1.6rem}
 
   /* ---- QUIZ: everything on one screen, centred, Exit always visible ---- */
   .qz-top{padding:.6rem .8rem;gap:.5rem}
