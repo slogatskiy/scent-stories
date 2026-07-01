@@ -464,13 +464,15 @@ body.quizdark{background:#100f0d;color:#f3efe7}
   .open-hint{display:none}
   .mbox-feature{grid-column:auto}   /* uniform 2-up, no odd full-width strip */
 
-  /* about: photo + text side by side, both compact */
-  .about-grid{grid-template-columns:.72fr 1fr;gap:1rem;align-items:start}
-  .about-media{max-width:none}
+  /* about: photo floated, text wraps around it (magazine style) */
+  .about-grid{display:block}
+  .about-media{float:left;width:42%;max-width:172px;margin:.35rem 1rem .5rem 0}
   .about-img{aspect-ratio:3/4}
+  .about-text{display:block}
   .about-text .kicker{font-size:.6rem}
-  .about-text h2{font-size:1.35rem;margin:.4rem 0 .7rem;line-height:1.15}
-  .about-text p{font-size:.82rem;margin-bottom:.6rem;max-width:none;line-height:1.55}
+  .about-text h2{font-size:1.3rem;margin:.35rem 0 .7rem;line-height:1.16}
+  .about-text p{font-size:.85rem;margin-bottom:.7rem;max-width:none;line-height:1.6}
+  .about-text p:last-child{clear:both}
 
   /* reviews: horizontal swipe instead of a tall stack */
   .reviews-grid{display:flex;overflow-x:auto;gap:.8rem;scroll-snap-type:x mandatory;
