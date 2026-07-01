@@ -200,6 +200,7 @@ function profile(){
   if(state.mode==='gift'){
     const mMood=mean(MOOD.map(m=>m.x));
     state.gmood.forEach(i=>U=add(U,sub(MOOD[i].x,mMood)));
+    if(state.gtex!=null)U=add(U,sub(TEXTURE[state.gtex].x,mean(TEXTURE.map(c=>c.x))));
     state.gblitz.forEach((side,i)=>{ if(side!=null)U=add(U,sub(GBLITZ[i][side].x,mean([GBLITZ[i].a.x,GBLITZ[i].b.x]))); });
     return U;
   }
@@ -214,22 +215,25 @@ function profile(){
 }
 function buildSet(U){
   const scored=POOL.map(p=>({p,rel:cos(U,p.x)})).sort((a,b)=>b.rel-a.rel);
-  // 1) anchor = the single best match to the vibe
+  // 1) anchor = the single best match to the vibe (keeps the set on-archetype)
   const anchor=scored[0].p;
-  // 2) coherence floor — only scents that share the anchor's DNA are eligible,
-  //    so the set reads as one story (no fresh-green next to a smoky oud).
-  let coh=0.55, cand=scored.filter(c=>cos(c.p.x,anchor.x)>=coh);
-  while(cand.length<5 && coh>0.05){ coh-=0.1; cand=scored.filter(c=>cos(c.p.x,anchor.x)>=coh); }
-  // 3) within that family, favour relevance; only nudge away from near-duplicates.
-  const pick=[]; const lambda=0.9;
-  while(pick.length<5 && cand.length){
-    let best=null,bi=0;
-    cand.forEach((c,i)=>{
+  // 2) coherence floor — only scents sharing the anchor's DNA are eligible, so the
+  //    set reads as one story. Keep a roomy pool (>=9) so we have variety to draw on.
+  let coh=0.6, cand=scored.filter(c=>cos(c.p.x,anchor.x)>=coh);
+  while(cand.length<9 && coh>0.05){ coh-=0.08; cand=scored.filter(c=>cos(c.p.x,anchor.x)>=coh); }
+  // 3) anchor is fixed; the other four are WEIGHTED-RANDOM from the coherent pool —
+  //    favour relevance, nudge away from near-dupes, but vary run-to-run so the same
+  //    answers don't always yield the identical five.
+  const pick=[anchor]; let rest=cand.filter(c=>c.p!==anchor);
+  while(pick.length<5 && rest.length){
+    const w=rest.map(c=>{
       let maxSim=0; pick.forEach(q=>{maxSim=Math.max(maxSim,cos(c.p.x,q.x));});
-      const mmr=lambda*c.rel-(1-lambda)*maxSim;
-      if(best===null||mmr>best){best=mmr;bi=i;}
+      const rel=Math.max(0.05,c.rel+1);            // shift: centred U can be negative
+      return Math.pow(rel,3)*(1-0.55*maxSim);      // rel^3 keeps it on-vibe; dup penalty
     });
-    pick.push(cand[bi].p); cand.splice(bi,1);
+    let tot=w.reduce((s,x)=>s+Math.max(0,x),0), r=Math.random()*tot, bi=0;
+    for(let i=0;i<w.length;i++){ r-=Math.max(0,w[i]); if(r<=0){bi=i;break;} }
+    pick.push(rest[bi].p); rest.splice(bi,1);
   }
   return pick;
 }
@@ -245,9 +249,9 @@ function fingerprint(U){
 
 // ---- state & flow ----
 const STEPS=['start','mood','city','texture','drink','hour','blitz','result'];
-let state={i:0,mode:null,recip:'',gmood:[],gblitz:[null,null,null,null,null],mood:[],city:null,texture:null,drink:null,hour:null,blitz:[null,null,null,null,null]};
+let state={i:0,mode:null,recip:'',gmood:[],gtex:null,gblitz:[null,null,null,null,null],mood:[],city:null,texture:null,drink:null,hour:null,blitz:[null,null,null,null,null]};
 
-function lastStep(){return state.mode==='gift'?2:6;} // question count per mode
+function lastStep(){return state.mode==='gift'?3:6;} // question count per mode
 function renderProg(){
   const qn=lastStep(); const cur=Math.min(Math.max(state.i-1,0),qn);
   prog.innerHTML=''; for(let k=0;k<qn;k++){const e=document.createElement('i'); if(k<cur)e.className='on'; prog.appendChild(e);}
@@ -259,7 +263,7 @@ function render(){
   if(state.i===0)return renderStart();
   const resultStep=lastStep()+1;
   if(state.i===resultStep)return renderResult();
-  if(state.mode==='gift'){ if(state.i===1)return renderGiftMood(); if(state.i===2)return renderGiftBlitz(); }
+  if(state.mode==='gift'){ if(state.i===1)return renderGiftMood(); if(state.i===2)return renderGiftTexture(); if(state.i===3)return renderGiftBlitz(); }
   const s=STEPS[state.i];
   if(s==='mood')return renderMood();
   if(s==='city')return renderTiles(CITY,'city','Where would you disappear?','Pick the one that pulls you.','g-city',3);
@@ -282,14 +286,22 @@ function renderGiftMood(){
     renderGiftMood();
   }));
 }
+function renderGiftTexture(){
+  const who=giftWho();
+  let h='<div class="qz-step"><p class="qz-kick">Step 2 · touch</p><h2 class="qz-q">What would you wrap '+who+' in?</h2><div class="qz-grid g-cards">';
+  TEXTURE.forEach((o,i)=>{ h+='<div class="card-opt'+(state.gtex===i?' sel':'')+'" data-i="'+i+'"><h4>'+o.l+'</h4><span>'+o.s+'</span></div>'; });
+  h+='</div><button class="qz-next"'+(state.gtex!=null?'':' disabled')+' onclick="go(3)">Continue</button>'+backBtn()+'</div>';
+  stage.innerHTML=h;
+  stage.querySelectorAll('.card-opt').forEach(t=>t.addEventListener('click',()=>{ state.gtex=+t.dataset.i; render(); }));
+}
 function renderGiftBlitz(){
   const who=giftWho();
-  let h='<div class="qz-step"><p class="qz-kick">Step 2 · instinct</p><h2 class="qz-q">More '+who+'?</h2><p class="qz-sub">Quick — tap the one that fits.</p><div class="blitz">';
+  let h='<div class="qz-step"><p class="qz-kick">Step 3 · instinct</p><h2 class="qz-q">More '+who+'?</h2><p class="qz-sub">Quick — tap the one that fits.</p><div class="blitz">';
   GBLITZ.forEach((p,i)=>{ h+='<div class="blitz-row" data-i="'+i+'">'+
     '<button class="'+(state.gblitz[i]==='a'?'sel':'')+'" data-side="a">'+p.a.l+'</button>'+
     '<button class="'+(state.gblitz[i]==='b'?'sel':'')+'" data-side="b">'+p.b.l+'</button></div>'; });
   const done=state.gblitz.every(x=>x!=null);
-  h+='</div><button class="qz-next"'+(done?'':' disabled')+' onclick="go(3)">See their set</button>'+backBtn()+'</div>';
+  h+='</div><button class="qz-next"'+(done?'':' disabled')+' onclick="go(4)">See their set</button>'+backBtn()+'</div>';
   stage.innerHTML=h;
   stage.querySelectorAll('.blitz-row button').forEach(b=>b.addEventListener('click',()=>{
     const row=+b.parentElement.dataset.i; state.gblitz[row]=b.dataset.side; renderGiftBlitz();
@@ -381,7 +393,7 @@ function renderResult(){
     location.href='index.html#bag';
   });
 }
-function restart(){state={i:0,mode:null,recip:'',gmood:[],gblitz:[null,null,null,null,null],mood:[],city:null,texture:null,drink:null,hour:null,blitz:[null,null,null,null,null]};render();}
+function restart(){state={i:0,mode:null,recip:'',gmood:[],gtex:null,gblitz:[null,null,null,null,null],mood:[],city:null,texture:null,drink:null,hour:null,blitz:[null,null,null,null,null]};render();}
 window.go=go; window.restart=restart;
 render();
 </script>
