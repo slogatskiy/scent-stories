@@ -141,43 +141,14 @@ const BLITZ=[
  {a:{l:'Be remembered',x:v(0,0,1,0,1,2)},b:{l:'Be a secret',x:v(1,1,0,1,0,0)}},
 ];
 
-// ---- gift flow: questions about the friend (single-select cards) ----
-const GIFT=[
- {kick:'The bond', q:'Who are they to you?', sub:'Start with the feeling.', opts:[
-   {l:'Someone I love',s:'partner, other half',x:v(0,0,2,3,0,0)},
-   {l:'My closest friend',s:'my person',x:v(2,2,0,1,0,0)},
-   {l:'Family',s:'home, roots',x:v(0,1,3,0,0,0)},
-   {l:'Someone new',s:'just getting to know them',x:v(3,0,0,2,0,0)},
-   {l:'Someone I look up to',s:'mentor, a little in awe',x:v(0,2,0,0,2,1)},
- ]},
- {kick:'Presence', q:'How do they walk into a room?', sub:'Picture it.', opts:[
-   {l:'Quietly, all warmth',s:'you feel them before you see them',x:v(0,0,3,0,0,0)},
-   {l:'Loud and magnetic',s:'the whole room turns',x:v(0,0,1,0,1,3)},
-   {l:'Cool and composed',s:'nothing rattles them',x:v(1,3,0,0,0,0)},
-   {l:'Soft and luminous',s:'easy to be around',x:v(0,0,1,3,0,0)},
-   {l:'A little mysterious',s:'you never quite have them',x:v(0,1,0,0,2,2)},
- ]},
- {kick:'In a word', q:'The word people reach for about them?', sub:'', opts:[
-   {l:'Elegant',s:'',x:v(0,2,0,2,0,0)},
-   {l:'Warm',s:'',x:v(0,0,3,0,0,0)},
-   {l:'Bold',s:'',x:v(0,0,1,0,2,3)},
-   {l:'Fresh',s:'',x:v(3,0,0,1,0,0)},
-   {l:'Timeless',s:'',x:v(0,2,0,0,3,0)},
- ]},
- {kick:'Their world', q:'Where would they rather be?', sub:'The place that is theirs.', opts:[
-   {l:'A sunlit coast',s:'salt and citrus',x:v(3,0,1,0,0,0)},
-   {l:'A pine forest',s:'cold air, tall trees',x:v(0,3,0,0,0,1)},
-   {l:'A candlelit dinner',s:'close and warm',x:v(0,0,2,2,0,0)},
-   {l:'A jazz bar past midnight',s:'low light, leather booths',x:v(0,1,1,0,3,0)},
-   {l:'A spice market abroad',s:'incense and gold',x:v(0,0,2,0,0,3)},
- ]},
- {kick:'The wish', q:'You want them to feel…', sub:'When they wear it.', opts:[
-   {l:'Remembered',s:'unforgettable',x:v(0,0,1,0,2,3)},
-   {l:'Comforted',s:'held',x:v(0,1,3,0,0,0)},
-   {l:'Powerful',s:'unstoppable',x:v(0,2,0,0,3,1)},
-   {l:'Joyful',s:'light',x:v(3,0,0,2,0,0)},
-   {l:'Seen',s:'truly themselves',x:v(0,0,1,3,0,0)},
- ]},
+// ---- gift flow: visual + one-word blitz, all about the friend (minimal reading) ----
+// Step 1 reuses the MOOD tiles ("which feel like them"). Step 2 is a quick this-or-that.
+const GBLITZ=[
+ {a:{l:'Bold',x:v(0,0,1,0,2,2)}, b:{l:'Understated',x:v(1,2,0,1,0,0)}},
+ {a:{l:'Classic',x:v(0,2,0,1,1,0)}, b:{l:'Adventurous',x:v(1,0,1,0,1,2)}},
+ {a:{l:'Warm',x:v(0,0,3,0,0,0)}, b:{l:'Cool',x:v(2,2,0,0,0,0)}},
+ {a:{l:'Loud',x:v(0,0,1,0,1,3)}, b:{l:'Mysterious',x:v(0,1,0,0,2,1)}},
+ {a:{l:'Sweet',x:v(0,0,2,2,0,0)}, b:{l:'Serious',x:v(0,3,0,0,1,0)}},
 ];
 
 // ---- archetype names by top-2 axes ----
@@ -227,7 +198,9 @@ function sub(a,b){return a.map((x,i)=>x-b[i]);}
 function profile(){
   let U=[0,0,0,0,0,0];
   if(state.mode==='gift'){
-    state.gans.forEach((ci,qi)=>{ if(ci!=null){const o=GIFT[qi].opts; U=add(U,sub(o[ci].x,mean(o.map(x=>x.x))));} });
+    const mMood=mean(MOOD.map(m=>m.x));
+    state.gmood.forEach(i=>U=add(U,sub(MOOD[i].x,mMood)));
+    state.gblitz.forEach((side,i)=>{ if(side!=null)U=add(U,sub(GBLITZ[i][side].x,mean([GBLITZ[i].a.x,GBLITZ[i].b.x]))); });
     return U;
   }
   const mMood=mean(MOOD.map(m=>m.x));
@@ -272,9 +245,9 @@ function fingerprint(U){
 
 // ---- state & flow ----
 const STEPS=['start','mood','city','texture','drink','hour','blitz','result'];
-let state={i:0,mode:null,recip:'',gans:[null,null,null,null,null],mood:[],city:null,texture:null,drink:null,hour:null,blitz:[null,null,null,null,null]};
+let state={i:0,mode:null,recip:'',gmood:[],gblitz:[null,null,null,null,null],mood:[],city:null,texture:null,drink:null,hour:null,blitz:[null,null,null,null,null]};
 
-function lastStep(){return state.mode==='gift'?GIFT.length:6;} // question count per mode
+function lastStep(){return state.mode==='gift'?2:6;} // question count per mode
 function renderProg(){
   const qn=lastStep(); const cur=Math.min(Math.max(state.i-1,0),qn);
   prog.innerHTML=''; for(let k=0;k<qn;k++){const e=document.createElement('i'); if(k<cur)e.className='on'; prog.appendChild(e);}
@@ -286,7 +259,7 @@ function render(){
   if(state.i===0)return renderStart();
   const resultStep=lastStep()+1;
   if(state.i===resultStep)return renderResult();
-  if(state.mode==='gift')return renderGift(state.i);
+  if(state.mode==='gift'){ if(state.i===1)return renderGiftMood(); if(state.i===2)return renderGiftBlitz(); }
   const s=STEPS[state.i];
   if(s==='mood')return renderMood();
   if(s==='city')return renderTiles(CITY,'city','Where would you disappear?','Pick the one that pulls you.','g-city',3);
@@ -295,14 +268,31 @@ function render(){
   if(s==='hour')return renderCards(HOUR,'hour','What time is it for you?',6);
   if(s==='blitz')return renderBlitz();
 }
-function renderGift(step){
-  const qi=step-1, g=GIFT[qi];
-  let h='<div class="qz-step"><p class="qz-kick">'+g.kick+'</p><h2 class="qz-q">'+g.q+'</h2>'+
-    (g.sub?'<p class="qz-sub">'+g.sub+'</p>':'')+'<div class="qz-grid g-cards">';
-  g.opts.forEach((o,i)=>{ h+='<div class="card-opt'+(state.gans[qi]===i?' sel':'')+'" data-i="'+i+'"><h4>'+o.l+'</h4>'+(o.s?'<span>'+o.s+'</span>':'')+'</div>'; });
-  h+='</div><button class="qz-next"'+(state.gans[qi]!=null?'':' disabled')+' onclick="go('+(step+1)+')">Continue</button>'+backBtn()+'</div>';
+function giftWho(){return (state.recip||'').trim()||'them';}
+function renderGiftMood(){
+  const who=giftWho();
+  let h='<div class="qz-step"><p class="qz-kick">Step 1 · them</p><h2 class="qz-q">Which of these is '+who+'?</h2><p class="qz-sub">Go on gut. Pick 3. · '+state.gmood.length+' / 3</p><div class="qz-grid g-mood">';
+  MOOD.forEach((m,i)=>{ h+='<div class="tile'+(state.gmood.includes(i)?' sel':'')+'" style="background:'+m.grad+'" data-i="'+i+'"><div class="cap">'+m.cap+'</div></div>'; });
+  h+='</div><button class="qz-next"'+(state.gmood.length===3?'':' disabled')+' onclick="go(2)">Continue</button>'+backBtn()+'</div>';
   stage.innerHTML=h;
-  stage.querySelectorAll('.card-opt').forEach(t=>t.addEventListener('click',()=>{ state.gans[qi]=+t.dataset.i; render(); }));
+  stage.querySelectorAll('.tile').forEach(t=>t.addEventListener('click',()=>{
+    const i=+t.dataset.i; const k=state.gmood.indexOf(i);
+    if(k>=0)state.gmood.splice(k,1); else if(state.gmood.length<3)state.gmood.push(i);
+    renderGiftMood();
+  }));
+}
+function renderGiftBlitz(){
+  const who=giftWho();
+  let h='<div class="qz-step"><p class="qz-kick">Step 2 · instinct</p><h2 class="qz-q">More '+who+'?</h2><p class="qz-sub">Quick — tap the one that fits.</p><div class="blitz">';
+  GBLITZ.forEach((p,i)=>{ h+='<div class="blitz-row" data-i="'+i+'">'+
+    '<button class="'+(state.gblitz[i]==='a'?'sel':'')+'" data-side="a">'+p.a.l+'</button>'+
+    '<button class="'+(state.gblitz[i]==='b'?'sel':'')+'" data-side="b">'+p.b.l+'</button></div>'; });
+  const done=state.gblitz.every(x=>x!=null);
+  h+='</div><button class="qz-next"'+(done?'':' disabled')+' onclick="go(3)">See their set</button>'+backBtn()+'</div>';
+  stage.innerHTML=h;
+  stage.querySelectorAll('.blitz-row button').forEach(b=>b.addEventListener('click',()=>{
+    const row=+b.parentElement.dataset.i; state.gblitz[row]=b.dataset.side; renderGiftBlitz();
+  }));
 }
 function backBtn(){return '<button class="qz-back" onclick="go('+(state.i-1)+')">← Back</button>';}
 
@@ -389,7 +379,7 @@ function renderResult(){
     location.href='index.html#bag';
   });
 }
-function restart(){state={i:0,mode:null,recip:'',gans:[null,null,null,null,null],mood:[],city:null,texture:null,drink:null,hour:null,blitz:[null,null,null,null,null]};render();}
+function restart(){state={i:0,mode:null,recip:'',gmood:[],gblitz:[null,null,null,null,null],mood:[],city:null,texture:null,drink:null,hour:null,blitz:[null,null,null,null,null]};render();}
 window.go=go; window.restart=restart;
 render();
 </script>
