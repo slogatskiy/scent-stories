@@ -439,3 +439,63 @@ body.quizdark{background:#100f0d;color:#f3efe7}
   .modal-media{min-height:230px;border-right:0;border-bottom:1px solid var(--line)}
   .modal-body{padding:1.6rem}
 }
+
+/* ============ PHONE (compact, fits-the-screen) ============ */
+@media(max-width:600px){
+  /* tighter vertical rhythm so you see more per screen */
+  .section{padding:3.4rem 1.1rem}
+  .section-head{margin-bottom:2rem}
+  .section-head h2{font-size:clamp(1.9rem,7vw,2.4rem)}
+  .section-head p{font-size:.9rem}
+
+  /* products: 2-up compact gallery — full details open in the modal */
+  .sets-grid,.advent-grid,.mystery-grid{grid-template-columns:1fr 1fr;gap:.7rem}
+  .set-img{height:116px}
+  .advent-img,.mbox-img{height:104px}
+  .set-body,.advent-body,.mbox-body{padding:.8rem .85rem .95rem}
+  .set-body h3,.advent-body h3,.mbox h3{font-size:1.02rem;line-height:1.16;margin-bottom:.25rem}
+  .mood,.notes,.advent-body p,.mbox-sub,.mbox-facts{display:none}
+  .advent-no{font-size:.9rem;margin-bottom:.2rem}
+  .set-foot,.mbox-foot{padding-top:.6rem;flex-wrap:wrap;gap:.25rem .5rem}
+  .foot-left{gap:.45rem}
+  .price{font-size:1.02rem}
+  .qty{font-size:.6rem}
+  .open-hint{display:none}
+  .mbox-feature{grid-column:span 2}
+
+  /* ---- QUIZ: everything on one screen, centred, Exit always visible ---- */
+  .qz-top{padding:.6rem .8rem;gap:.5rem}
+  .qz-top .brand{font-size:1rem}
+  .qz-prog{width:min(120px,30vw)}
+  .qz-exit{font-size:.74rem}
+  .qz-stage{padding:3.4rem .9rem 1.3rem;min-height:100svh}
+  .qz-step{max-width:400px}
+  .qz-kick{margin-bottom:.5rem;font-size:.62rem}
+  .qz-q{font-size:1.5rem}
+  .qz-sub{margin-bottom:.95rem;font-size:.82rem}
+  .qz-grid{gap:.5rem}
+  .qz-grid.g-mood,.qz-grid.g-city,.qz-grid.g-cards{max-width:326px}
+  .tile .cap{font-size:.75rem;padding:.42rem .5rem}
+  .card-opt{padding:.9rem .7rem}
+  .card-opt h4{font-size:1rem}
+  .card-opt span{font-size:.76rem}
+  .qz-next{margin-top:1.25rem;padding:.85em 2em;font-size:.72rem}
+  .qz-back{margin-top:.8rem;font-size:.78rem}
+  .qz-start h1{font-size:clamp(2.1rem,9.5vw,3rem);margin-bottom:.85rem}
+  .qz-start p{font-size:.9rem;margin-bottom:1.35rem}
+  .mode-choice{gap:.65rem}
+  .mode-card{flex:1 1 100%;max-width:340px;padding:1rem 1.1rem}
+  .mode-card h3{font-size:1.3rem}
+  /* result */
+  .result-archetype{font-size:clamp(1.9rem,8.5vw,2.6rem)}
+  .result-fp{margin:1rem 0;gap:.5rem}
+  .result-fp span{padding:.35em .8em;font-size:.68rem}
+  .result-five{max-width:330px;margin:1.15rem auto}
+  .result-five li{padding:.5rem 0;font-size:.9rem}
+  .result-meta{margin:1.05rem 0}
+  .result-price{font-size:1.55rem}
+  .result-closer{font-size:1rem;margin-top:1.5rem}
+  /* blitz */
+  .blitz{max-width:330px;gap:.65rem}
+  .blitz-row button{padding:.85em .6em;font-size:1rem}
+}
