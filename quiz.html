@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <link rel="stylesheet" href="styles.css" />
+<script src="analytics.js" defer></script>
 </head>
 <body class="quizdark">
 
@@ -318,7 +319,7 @@ function renderStart(){
       '<button class="mode-card'+(state.mode==='gift'?' sel':'')+'" data-mode="gift"><h3>As a gift</h3><span>Build it for someone else</span></button>'+
     '</div>'+
     '<div class="gift-name'+(state.mode==='gift'?' show':'')+'"><input id="recip" type="text" maxlength="24" autocomplete="off" placeholder="Their name (optional)" value="'+state.recip.replace(/"/g,'&quot;')+'"/></div>'+
-    '<button class="qz-next" id="beginBtn"'+(state.mode?'':' disabled')+' onclick="go(1)">Begin</button></div>';
+    '<button class="qz-next" id="beginBtn"'+(state.mode?'':' disabled')+' onclick="quizBegin()">Begin</button></div>';
   stage.querySelectorAll('.mode-card').forEach(c=>c.addEventListener('click',()=>{
     state.mode=c.dataset.mode; renderStart();
     if(state.mode==='gift'){const r=$('recip'); if(r)r.focus();}
@@ -371,6 +372,7 @@ function renderResult(){
   const rows=[0,1,2,3,4].map(i=>'<li>Decant '+('0'+(i+1)).slice(-2)+'<span>🔒 sealed · 2 ml</span></li>').join('');
   const isGift=state.mode==='gift';
   const who=(state.recip||'').trim();
+  if(window.ssTrack)ssTrack('quiz_complete',{mode:state.mode,archetype:name});
   const kick=isGift?('A gift'+(who?' for '+who:'')):'Your set';
   const closer=isGift?'They open the box to meet all five. You just picked the feeling.':'The five stay sealed until they reach you. Trust the vibe — open the box to meet them.';
   let h='<div class="qz-step"><p class="qz-kick">'+kick+'</p>'+
@@ -387,6 +389,7 @@ function renderResult(){
   $('addSet').addEventListener('click',()=>{
     const label=isGift?('Gift'+(who?' for '+who:'')+' — '+name):(name+' — mystery set');
     const note=isGift&&$('giftNote')?$('giftNote').value.trim():'';
+    if(window.ssTrack)ssTrack('quiz_add_to_bag',{mode:state.mode,archetype:name});
     try{const c=JSON.parse(localStorage.getItem('ss_cart')||'[]');
       c.push({name:label,price:50,qty:1,contents:set.map(p=>p.n),gift:isGift,recipient:who,note:note});
       localStorage.setItem('ss_cart',JSON.stringify(c));}catch(e){}
@@ -394,7 +397,8 @@ function renderResult(){
   });
 }
 function restart(){state={i:0,mode:null,recip:'',gmood:[],gtex:null,gblitz:[null,null,null,null,null],mood:[],city:null,texture:null,drink:null,hour:null,blitz:[null,null,null,null,null]};render();}
-window.go=go; window.restart=restart;
+function quizBegin(){ if(window.ssTrack)ssTrack('quiz_start',{mode:state.mode}); go(1); }
+window.go=go; window.restart=restart; window.quizBegin=quizBegin;
 render();
 </script>
 </body>

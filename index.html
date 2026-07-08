@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <link rel="stylesheet" href="styles.css" />
+<script src="analytics.js" defer></script>
 </head>
 <body>
 
@@ -397,7 +398,7 @@
     <span class="kicker">Be first</span>
     <h2>Join the list</h2>
     <p>We're curating the first drop now. Get early access and a founding-member discount.</p>
-    <form class="wl-form" onsubmit="event.preventDefault(); try{localStorage.setItem('ss_email', this.querySelector('input').value);}catch(e){} this.reset(); document.getElementById('wl-msg').classList.add('show');">
+    <form class="wl-form" onsubmit="event.preventDefault(); try{localStorage.setItem('ss_email', this.querySelector('input').value);}catch(e){} if(window.ssTrack)ssTrack('waitlist_signup'); this.reset(); document.getElementById('wl-msg').classList.add('show');">
       <input type="email" required placeholder="you@example.com" aria-label="Email" />
       <button type="submit" class="btn btn-solid">Get early access</button>
     </form>
@@ -469,6 +470,7 @@ function openModal(card){
   const media=card.querySelector('.set-img,.advent-img,.mbox-img');
   $('modalMedia').innerHTML = media?media.outerHTML:'';
   currentProduct = card.querySelector('h3').textContent;
+  if(window.ssTrack)ssTrack('product_open',{kind:type,title:currentProduct});
   $('modalTitle').textContent = currentProduct;
   const tag=card.querySelector('.mood,.mbox-sub,.advent-body p');
   $('modalTagline').textContent = tag?tag.textContent:'';
@@ -533,8 +535,8 @@ function openCart(){cart.classList.add('open');cart.setAttribute('aria-hidden','
 function closeCart(){cart.classList.remove('open');cart.setAttribute('aria-hidden','true');document.body.style.overflow='';}
 $('cartBtn').addEventListener('click',openCart);
 cart.querySelectorAll('[data-cart-close]').forEach(el=>el.addEventListener('click',closeCart));
-$('cartCheckout').addEventListener('click',()=>{ closeCart(); location.hash='#waitlist'; });
-$('modalAdd').addEventListener('click',()=>{ if(currentProduct){ addToCart(currentProduct,currentPrice||0); closeModal(); openCart(); } });
+$('cartCheckout').addEventListener('click',()=>{ if(window.ssTrack)ssTrack('checkout_click'); closeCart(); location.hash='#waitlist'; });
+$('modalAdd').addEventListener('click',()=>{ if(currentProduct){ if(window.ssTrack)ssTrack('add_to_bag',{product:currentProduct,price:currentPrice||0}); addToCart(currentProduct,currentPrice||0); closeModal(); openCart(); } });
 renderCart();
 if(location.hash==='#bag'){ openCart(); }
 
