@@ -146,7 +146,6 @@ a{color:inherit;text-decoration:none}
 .drops{list-style:none;display:flex;flex-direction:column;gap:.75rem;margin-bottom:1.7rem;flex:1}
 .drops li{font-size:.88rem;padding-left:1.1rem;position:relative;line-height:1.45;color:var(--ink)}
 .drops li::before{content:"—";position:absolute;left:0;color:var(--muted)}
-.mbox-feature{border-color:var(--ink)}
 
 /* ============ STEPS ============ */
 .step{text-align:left}
