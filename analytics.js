@@ -7,7 +7,7 @@
   /* ─── 1) Paste your Clarity project ID here ───────────────────────────────
      clarity.microsoft.com → create project → Settings → Overview → "Clarity ID"
      Leave empty to disable Clarity (named events still log locally).           */
-  var CLARITY_ID = "";
+  var CLARITY_ID = "xj82v8kn4y";
 
   if (CLARITY_ID) {
     (function(c,l,a,r,i,t,y){
