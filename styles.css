@@ -309,6 +309,8 @@ a{color:inherit;text-decoration:none}
 .chip{font-size:.78rem;border:1px solid var(--line);border-radius:999px;padding:.4em .9em;color:var(--ink)}
 .chip-empty{color:var(--muted);font-style:italic}
 .chip-archetype{border-color:var(--accent);color:var(--accent)}
+.fade-in{animation:fadeUp .5s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .orders-empty{display:flex;flex-direction:column;align-items:flex-start;gap:1rem}
 .dash-signout{margin-top:2.5rem;text-align:center}
 

@@ -193,6 +193,9 @@ function signInAs(email){
   try{localStorage.setItem('ss_email',email);}catch(e){}
   if(window.ssTrack) ssTrack('account_signin');
   render();
+  // bring the freshly-loaded dashboard into view (form may have been scrolled)
+  try{ window.scrollTo({top:0,behavior:'smooth'}); }catch(e){ window.scrollTo(0,0); }
+  const dash=$('dash'); if(dash){ dash.classList.remove('fade-in'); void dash.offsetWidth; dash.classList.add('fade-in'); }
 }
 
 function render(){
@@ -247,13 +250,14 @@ function renderProfile(){
   }
 }
 
+function scrollCardIntoView(){ try{ window.scrollTo({top:0,behavior:'smooth'}); }catch(e){ window.scrollTo(0,0); } }
 $('authForm').addEventListener('submit',handleAuth);
-$('linkToggle').addEventListener('click',e=>{ e.preventDefault(); setMode(authMode==='signin'?'signup':'signin'); });
-$('linkForgot').addEventListener('click',e=>{ e.preventDefault(); setMode('forgot'); });
+$('linkToggle').addEventListener('click',e=>{ e.preventDefault(); setMode(authMode==='signin'?'signup':'signin'); scrollCardIntoView(); });
+$('linkForgot').addEventListener('click',e=>{ e.preventDefault(); setMode('forgot'); scrollCardIntoView(); });
 $('signout').addEventListener('click',e=>{
   e.preventDefault();
   try{localStorage.removeItem('ss_email');}catch(err){}
-  render();
+  render(); scrollCardIntoView();
 });
 document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',()=>document.body.classList.remove('nav-open')));
 render();
