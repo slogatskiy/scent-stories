@@ -271,6 +271,13 @@ a{color:inherit;text-decoration:none}
   padding:.9em 1.4em;color:var(--ink);font-family:var(--sans);font-size:.95rem}
 .signin-form input:focus{outline:none;border-color:var(--accent)}
 .signin-note{margin-top:1.4rem;font-size:.78rem;color:var(--muted)}
+.auth-form{flex-direction:column;align-items:stretch;gap:.7rem;margin-bottom:1.1rem}
+.auth-form input{width:100%;min-width:0;text-align:left}
+.auth-error{color:#a4392b;font-size:.82rem;margin:.1rem 0 0;text-align:left;line-height:1.4}
+.auth-links{display:flex;justify-content:space-between;gap:1rem 1.5rem;flex-wrap:wrap;font-size:.85rem}
+.auth-links a{color:var(--muted);text-decoration:underline;text-underline-offset:2px;transition:.2s}
+.auth-links a:hover{color:var(--accent)}
+.auth-links a[hidden]{display:none}
 
 .acc-dash{min-height:60vh}
 .dash-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1.5rem;flex-wrap:wrap;
@@ -301,6 +308,7 @@ a{color:inherit;text-decoration:none}
 .chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.1rem}
 .chip{font-size:.78rem;border:1px solid var(--line);border-radius:999px;padding:.4em .9em;color:var(--ink)}
 .chip-empty{color:var(--muted);font-style:italic}
+.chip-archetype{border-color:var(--accent);color:var(--accent)}
 .orders-empty{display:flex;flex-direction:column;align-items:flex-start;gap:1rem}
 .dash-signout{margin-top:2.5rem;text-align:center}
 

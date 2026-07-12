@@ -36,13 +36,21 @@
 <section class="section acc-signin" id="signin" hidden>
   <div class="signin-card">
     <span class="kicker">Members</span>
-    <h2>Your account</h2>
-    <p>Sign in with your email to see your reserved stories, decant credit and scent profile.</p>
-    <form id="signinForm" class="signin-form">
-      <input type="email" required placeholder="you@example.com" aria-label="Email" />
-      <button type="submit" class="btn btn-solid">Sign in</button>
+    <h2 id="authTitle">Welcome back</h2>
+    <p id="authSub">Sign in to see your reserved stories, decant credit and scent profile.</p>
+    <form id="authForm" class="signin-form auth-form" novalidate autocomplete="on">
+      <input id="fName" type="text" placeholder="First name" aria-label="First name" autocomplete="given-name" hidden />
+      <input id="fEmail" type="email" required placeholder="you@example.com" aria-label="Email" autocomplete="email" />
+      <input id="fPass" type="password" required placeholder="Password" aria-label="Password" autocomplete="current-password" minlength="6" />
+      <input id="fPass2" type="password" placeholder="Confirm password" aria-label="Confirm password" autocomplete="new-password" hidden />
+      <p class="auth-error" id="authError" role="alert" hidden></p>
+      <button type="submit" class="btn btn-solid full" id="authSubmit">Sign in</button>
     </form>
-    <p class="signin-note">Concept demo — no password, nothing leaves your browser.</p>
+    <div class="auth-links">
+      <a href="#" id="linkForgot">Forgot password?</a>
+      <a href="#" id="linkToggle">Create an account</a>
+    </div>
+    <p class="signin-note" id="authNote">Your account lives in this browser — nothing leaves your device.</p>
   </div>
 </section>
 
@@ -79,8 +87,8 @@
     <article class="dash-card">
       <div class="dash-card-head"><h3>Your scent profile</h3></div>
       <div class="chips" id="chips"><span class="chip chip-empty">Not set yet</span></div>
-      <p class="dash-muted">Take the quiz and we'll tune your recommendations.</p>
-      <button class="btn btn-line full" disabled>Take the scent quiz · soon</button>
+      <p class="dash-muted" id="profileMuted">Take the quiz and we'll tune your recommendations.</p>
+      <a class="btn btn-line full" id="quizBtn" href="quiz.html">Take the scent quiz</a>
     </article>
 
     <!-- Orders -->
@@ -112,13 +120,92 @@
 const $=id=>document.getElementById(id);
 function getEmail(){ try{return localStorage.getItem('ss_email');}catch(e){return null;} }
 function getCart(){ try{return JSON.parse(localStorage.getItem('ss_cart')||'[]');}catch(e){return [];} }
+function getAccounts(){ try{return JSON.parse(localStorage.getItem('ss_accounts')||'{}');}catch(e){return {};} }
+function saveAccounts(a){ try{localStorage.setItem('ss_accounts',JSON.stringify(a));}catch(e){} }
 function nameFromEmail(e){ if(!e)return 'friend'; const n=e.split('@')[0].replace(/[._]/g,' '); return n.charAt(0).toUpperCase()+n.slice(1); }
+function normEmail(e){ return (e||'').trim().toLowerCase(); }
+function validEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+async function hash(pw){
+  try{
+    const buf=await crypto.subtle.digest('SHA-256', new TextEncoder().encode('ss·'+pw));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }catch(e){ return 'p:'+pw; } // fallback for non-secure contexts (local file://)
+}
+
+/* ---- Auth UI ---- */
+let authMode='signin'; // signin | signup | forgot
+function showError(msg){ const el=$('authError'); if(!msg){el.hidden=true;el.textContent='';return;} el.textContent=msg; el.hidden=false; }
+function setMode(mode){
+  authMode=mode; showError('');
+  const name=$('fName'), pass=$('fPass'), pass2=$('fPass2');
+  const accounts=getAccounts();
+  if(mode==='signin'){
+    $('authTitle').textContent = Object.keys(accounts).length? 'Welcome back':'Your account';
+    $('authSub').textContent='Sign in to see your reserved stories, decant credit and scent profile.';
+    name.hidden=true; pass.hidden=false; pass.setAttribute('autocomplete','current-password'); pass2.hidden=true;
+    $('authSubmit').textContent='Sign in';
+    $('linkForgot').hidden=false; $('linkToggle').textContent='Create an account';
+  } else if(mode==='signup'){
+    $('authTitle').textContent='Create your account';
+    $('authSub').textContent='Join as a founding member and reserve your first stories.';
+    name.hidden=false; pass.hidden=false; pass.setAttribute('autocomplete','new-password'); pass2.hidden=false;
+    $('authSubmit').textContent='Create account';
+    $('linkForgot').hidden=true; $('linkToggle').textContent='Have an account? Sign in';
+  } else { // forgot
+    $('authTitle').textContent='Reset your password';
+    $('authSub').textContent='Enter your email and a new password to regain access on this device.';
+    name.hidden=true; pass.hidden=false; pass.setAttribute('autocomplete','new-password'); pass2.hidden=false;
+    $('authSubmit').textContent='Set new password';
+    $('linkForgot').hidden=true; $('linkToggle').textContent='Back to sign in';
+  }
+  $('fPass').placeholder = (mode==='signin')?'Password':'Password (6+ characters)';
+}
+
+async function handleAuth(e){
+  e.preventDefault(); showError('');
+  const email=normEmail($('fEmail').value), pw=$('fPass').value, pw2=$('fPass2').value, nm=$('fName').value.trim();
+  if(!validEmail(email)) return showError('Please enter a valid email address.');
+  const accounts=getAccounts();
+
+  if(authMode==='signin'){
+    const acc=accounts[email];
+    if(!acc) return showError('No account found for that email. Create one below.');
+    if(acc.hash!==await hash(pw)) return showError('Incorrect password. Try again or reset it.');
+    signInAs(email);
+  } else if(authMode==='signup'){
+    if(accounts[email]) return showError('An account with that email already exists. Sign in instead.');
+    if(pw.length<6) return showError('Password must be at least 6 characters.');
+    if(pw!==pw2) return showError('Passwords do not match.');
+    accounts[email]={ name:nm||nameFromEmail(email), hash:await hash(pw), created:Date.now(), credit:0 };
+    saveAccounts(accounts);
+    if(window.ssTrack) ssTrack('account_created');
+    signInAs(email);
+  } else { // forgot
+    if(!accounts[email]) return showError('No account found for that email on this device.');
+    if(pw.length<6) return showError('Password must be at least 6 characters.');
+    if(pw!==pw2) return showError('Passwords do not match.');
+    accounts[email].hash=await hash(pw); saveAccounts(accounts);
+    signInAs(email);
+  }
+}
+
+function signInAs(email){
+  try{localStorage.setItem('ss_email',email);}catch(e){}
+  if(window.ssTrack) ssTrack('account_signin');
+  render();
+}
 
 function render(){
-  const email=getEmail();
-  if(!email){ $('signin').hidden=false; $('dash').hidden=true; return; }
+  const email=getEmail(); const accounts=getAccounts();
+  if(!email || !accounts[email]){
+    try{ if(email && !accounts[email]) localStorage.removeItem('ss_email'); }catch(e){}
+    $('signin').hidden=false; $('dash').hidden=true;
+    setMode(Object.keys(accounts).length?'signin':'signup');
+    return;
+  }
   $('signin').hidden=true; $('dash').hidden=false;
-  $('dashName').textContent=nameFromEmail(email);
+  const acc=accounts[email];
+  $('dashName').textContent=acc.name||nameFromEmail(email);
   $('dashEmail').textContent=email;
   const cartArr=getCart();
   const count=cartArr.reduce((n,i)=>n+(i.qty||1),0);
@@ -141,14 +228,28 @@ function render(){
       li.append(span,meta); list.appendChild(li);
     });
   }
+  renderProfile();
 }
 
-$('signinForm').addEventListener('submit',e=>{
-  e.preventDefault();
-  const v=e.target.querySelector('input').value;
-  try{localStorage.setItem('ss_email',v);}catch(err){}
-  render();
-});
+function renderProfile(){
+  let p=null; try{p=JSON.parse(localStorage.getItem('ss_profile')||'null');}catch(e){}
+  const chips=$('chips');
+  if(p && p.chips && p.chips.length){
+    chips.innerHTML='';
+    if(p.archetype){ const a=document.createElement('span'); a.className='chip chip-archetype'; a.textContent=p.archetype; chips.appendChild(a); }
+    p.chips.forEach(c=>{ const s=document.createElement('span'); s.className='chip'; s.textContent=c; chips.appendChild(s); });
+    $('profileMuted').textContent='Based on your quiz. Retake it any time to re-tune your recommendations.';
+    $('quizBtn').textContent='Retake the scent quiz';
+  } else {
+    chips.innerHTML='<span class="chip chip-empty">Not set yet</span>';
+    $('profileMuted').textContent="Take the quiz and we'll tune your recommendations.";
+    $('quizBtn').textContent='Take the scent quiz';
+  }
+}
+
+$('authForm').addEventListener('submit',handleAuth);
+$('linkToggle').addEventListener('click',e=>{ e.preventDefault(); setMode(authMode==='signin'?'signup':'signin'); });
+$('linkForgot').addEventListener('click',e=>{ e.preventDefault(); setMode('forgot'); });
 $('signout').addEventListener('click',e=>{
   e.preventDefault();
   try{localStorage.removeItem('ss_email');}catch(err){}

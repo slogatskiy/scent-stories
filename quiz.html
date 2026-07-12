@@ -373,6 +373,7 @@ function renderResult(){
   const isGift=state.mode==='gift';
   const who=(state.recip||'').trim();
   if(window.ssTrack)ssTrack('quiz_complete',{mode:state.mode,archetype:name});
+  try{ localStorage.setItem('ss_profile',JSON.stringify({archetype:name,chips:fp,updated:Date.now()})); }catch(e){}
   const kick=isGift?('A gift'+(who?' for '+who:'')):'Your set';
   const closer=isGift?'They open the box to meet all five. You just picked the feeling.':'The five stay sealed until they reach you. Trust the vibe — open the box to meet them.';
   let h='<div class="qz-step"><p class="qz-kick">'+kick+'</p>'+
