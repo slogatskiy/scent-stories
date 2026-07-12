@@ -311,6 +311,8 @@ a{color:inherit;text-decoration:none}
 .chip-archetype{border-color:var(--accent);color:var(--accent)}
 .fade-in{animation:fadeUp .5s ease both}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+body{transition:opacity .38s ease}
+body.page-leave{opacity:0}
 .orders-empty{display:flex;flex-direction:column;align-items:flex-start;gap:1rem}
 .dash-signout{margin-top:2.5rem;text-align:center}
 

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Scent Stories — Your account</title>
+<meta name="description" content="Your Scent Stories account — reserved stories, decant credit and scent profile." />
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="stylesheet" href="styles.css" />
+<script src="analytics.js" defer></script>
+<script>
+// Guard: no session → back to sign in (runs before paint to avoid a flash).
+(function(){
+  try{
+    var e=localStorage.getItem('ss_email');
+    var a=JSON.parse(localStorage.getItem('ss_accounts')||'{}');
+    if(!e || !a[e]){ location.replace('account.html'); }
+  }catch(err){ location.replace('account.html'); }
+})();
+</script>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav scrolled" id="nav">
+  <div class="nav-inner">
+    <a href="index.html#top" class="brand"><svg class="brand-mark" viewBox="0 0 24 32" aria-hidden="true"><rect x="8.5" y="2" width="7" height="4.4" rx="1" fill="currentColor"/><rect x="10.5" y="6" width="3" height="2" fill="currentColor"/><rect x="5.5" y="8" width="13" height="22" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Scent&nbsp;Stories</a>
+    <nav class="nav-links">
+      <a href="index.html#sets">Stories</a>
+      <a href="index.html#advent">Advent</a>
+      <a href="index.html#mystery">Mystery</a>
+      <a href="index.html#about">About</a>
+      <a href="dashboard.html">Account</a>
+    </nav>
+    <a href="index.html#waitlist" class="btn btn-pill nav-cta">Join the list</a>
+    <button class="nav-toggle" aria-label="Menu" onclick="document.body.classList.toggle('nav-open')">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- DASHBOARD -->
+<section class="section acc-dash fade-in" id="dash">
+  <div class="dash-head">
+    <div>
+      <span class="kicker">Welcome back</span>
+      <h2 id="dashName">friend</h2>
+      <p id="dashEmail" class="dash-email"></p>
+    </div>
+    <span class="member-badge">Founding member</span>
+  </div>
+
+  <div class="dash-grid">
+
+    <!-- Reserved -->
+    <article class="dash-card dash-wide">
+      <div class="dash-card-head"><h3>Your bag</h3><span class="dash-count" id="resCount">0</span></div>
+      <ul class="res-list" id="resList"></ul>
+      <p class="res-empty" id="resEmpty" hidden>Your bag is empty.
+        <a href="index.html#sets" class="link-arrow">Explore the stories</a></p>
+      <p class="res-foot" id="resFoot">Manage quantities in the bag on the main page. Checkout opens at the first drop.</p>
+    </article>
+
+    <!-- Decant credit -->
+    <article class="dash-card">
+      <div class="dash-card-head"><h3>Decant credit</h3></div>
+      <p class="credit-amt">$0.00</p>
+      <p class="dash-muted">Earned on every order. Redeemable toward any full bottle once you find your signature.</p>
+    </article>
+
+    <!-- Scent profile -->
+    <article class="dash-card">
+      <div class="dash-card-head"><h3>Your scent profile</h3></div>
+      <div class="chips" id="chips"><span class="chip chip-empty">Not set yet</span></div>
+      <p class="dash-muted" id="profileMuted">Take the quiz and we'll tune your recommendations.</p>
+      <a class="btn btn-line full" id="quizBtn" href="quiz.html">Take the scent quiz</a>
+    </article>
+
+    <!-- Orders -->
+    <article class="dash-card dash-wide">
+      <div class="dash-card-head"><h3>Orders</h3></div>
+      <div class="orders-empty">
+        <p class="dash-muted">No orders yet. The first drop ships this autumn — reserve your stories now and you'll be first in line.</p>
+        <a href="index.html#sets" class="btn btn-line">Browse stories</a>
+      </div>
+    </article>
+
+  </div>
+
+  <p class="dash-signout"><a href="#" id="signout" class="link-arrow muted">Sign out</a></p>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand"><span class="brand">Scent&nbsp;Stories</span><p>A scent for every feeling.</p></div>
+    <p class="disclaimer">Concept site. All fragrances named are trademarks of their respective owners.
+      Scent Stories is an independent curator, not affiliated with, sponsored by, or endorsed by any brand shown.
+      Decants are repackaged from authentic products.</p>
+  </div>
+  <div class="footer-bottom">© 2026 Scent Stories · a concept · <a href="faq.html" class="footer-link">FAQ</a></div>
+</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+function getEmail(){ try{return localStorage.getItem('ss_email');}catch(e){return null;} }
+function getCart(){ try{return JSON.parse(localStorage.getItem('ss_cart')||'[]');}catch(e){return [];} }
+function getAccounts(){ try{return JSON.parse(localStorage.getItem('ss_accounts')||'{}');}catch(e){return {};} }
+function nameFromEmail(e){ if(!e)return 'friend'; const n=e.split('@')[0].replace(/[._]/g,' '); return n.charAt(0).toUpperCase()+n.slice(1); }
+
+function render(){
+  const email=getEmail(); const accounts=getAccounts();
+  if(!email || !accounts[email]){ location.replace('account.html'); return; }
+  const acc=accounts[email];
+  $('dashName').textContent=acc.name||nameFromEmail(email);
+  $('dashEmail').textContent=email;
+  const cartArr=getCart();
+  const count=cartArr.reduce((n,i)=>n+(i.qty||1),0);
+  $('resCount').textContent=count;
+  const list=$('resList'); list.innerHTML='';
+  if(cartArr.length===0){ $('resEmpty').hidden=false; $('resFoot').style.display='none'; }
+  else{
+    $('resEmpty').hidden=true; $('resFoot').style.display='';
+    cartArr.forEach((it,idx)=>{
+      const li=document.createElement('li');
+      li.className='res-item';
+      const span=document.createElement('span'); span.textContent=it.name+(it.qty>1?'  × '+it.qty:'');
+      const status=document.createElement('span'); status.className='res-status'; status.textContent='$'+(Math.round((it.price||0)*(it.qty||1)*100)/100);
+      const rm=document.createElement('button'); rm.className='res-remove'; rm.textContent='Remove'; rm.setAttribute('aria-label','Remove '+it.name);
+      rm.addEventListener('click',()=>{
+        const cur=getCart(); cur.splice(idx,1);
+        localStorage.setItem('ss_cart',JSON.stringify(cur)); render();
+      });
+      const meta=document.createElement('span'); meta.className='res-meta'; meta.append(status,rm);
+      li.append(span,meta); list.appendChild(li);
+    });
+  }
+  renderProfile();
+}
+
+function renderProfile(){
+  let p=null; try{p=JSON.parse(localStorage.getItem('ss_profile')||'null');}catch(e){}
+  const chips=$('chips');
+  if(p && p.chips && p.chips.length){
+    chips.innerHTML='';
+    if(p.archetype){ const a=document.createElement('span'); a.className='chip chip-archetype'; a.textContent=p.archetype; chips.appendChild(a); }
+    p.chips.forEach(c=>{ const s=document.createElement('span'); s.className='chip'; s.textContent=c; chips.appendChild(s); });
+    $('profileMuted').textContent='Based on your quiz. Retake it any time to re-tune your recommendations.';
+    $('quizBtn').textContent='Retake the scent quiz';
+  } else {
+    chips.innerHTML='<span class="chip chip-empty">Not set yet</span>';
+    $('profileMuted').textContent="Take the quiz and we'll tune your recommendations.";
+    $('quizBtn').textContent='Take the scent quiz';
+  }
+}
+
+$('signout').addEventListener('click',e=>{
+  e.preventDefault();
+  try{localStorage.removeItem('ss_email');}catch(err){}
+  document.body.classList.add('page-leave');
+  setTimeout(()=>{ location.href='account.html'; }, 360);
+});
+document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',()=>document.body.classList.remove('nav-open')));
+render();
+</script>
+</body>
+</html>
